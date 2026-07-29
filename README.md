@@ -1,1 +1,1 @@
-** This project has been created as part of the 42 curriculum by mnoda-ta, rkato. **
+** This project has been created as part of the 42 curriculum by mnoda-ta, rkato! **
