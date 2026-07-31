@@ -1,7 +1,7 @@
 from main import Cell, MazeGenerator
 
 
-def make_grid(maze: MazeGenerator):
+def make_grid(maze: MazeGenerator) -> list[list[str]]:
     rows = len(maze.grid)
     cols = len(maze.grid[0])
     new_grid = [
@@ -46,6 +46,16 @@ def make_grid(maze: MazeGenerator):
                 new_grid[2 * y + 1][2 * x] = "|"
 
     return new_grid
+
+
+def add_start_goal(
+    maze: MazeGenerator, grid: list[list[str]]
+) -> list[list[str]]:
+    x, y = maze.entry
+    grid[2 * y + 1][2 * x + 1] = " S "
+    x, y = maze.exit
+    grid[2 * y + 1][2 * x + 1] = " G "
+    return grid
 
 
 def make_test_grid():
@@ -116,8 +126,9 @@ def main() -> None:
     maze = MazeGenerator(width=3, height=3, seed=0, entry=(0, 0), exit=(2, 2))
     maze.grid = test_grid
     grid = make_grid(maze)
+    add_SG_grid = add_start_goal(maze, grid)
     new_grid = []
-    for i in grid:
+    for i in add_SG_grid:
         new_grid.append("".join(i))
     print("\n".join(new_grid))
 
