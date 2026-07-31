@@ -19,3 +19,4 @@ class MazeGenerator:
         self.grid: list[list[Cell]] = []
         self.entry: tuple[int, int] = entry
         self.exit: tuple[int, int] = exit
+        self.perfect = False
