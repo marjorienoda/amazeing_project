@@ -19,10 +19,16 @@ class MazeGenerator:
 
 
 class Cell:
-	def __init__(self, x, y, north, east, south, west)
-		self.x = x
-		self.y = y
-		self.
+    def init(self, x: int, y: int):
+        self.x = x
+        self.y = y
+        self.visited: bool = False
+        self.walls: dict[str, bool] = {
+            "north": True,
+            "south": True,
+            "east": True,
+            "west": True,
+        }
 
 def make_grid(maze: MazeGenerator):
 	rows = len(maze.grid)
