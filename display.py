@@ -29,7 +29,6 @@ class MazeGenerator:
 		else:
 				hdifidjfis
 
-
 def make_grid(maze: MazeGenerator):
 	rows = len(maze.grid)
 	cols = len(maze.grid[0])
