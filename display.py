@@ -122,6 +122,5 @@ def main() -> None:
     print("\n".join(new_grid))
 
 
-# test
 if __name__ == "__main__":
     main()
