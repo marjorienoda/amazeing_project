@@ -1,3 +1,4 @@
+
 from main import Cell, MazeGenerator
 
 
@@ -7,7 +8,7 @@ def make_grid(maze: MazeGenerator) -> list[list[str]]:
     new_grid = [
         [" " for _ in range(2 * cols + 1)] for _ in range(2 * rows + 1)
     ]
-    ## empty gridを作る
+    ## fill space
 
     for row in range(0, 2 * rows + 1, 2):
         for col in range(0, 2 * cols + 1, 2):
@@ -17,14 +18,14 @@ def make_grid(maze: MazeGenerator) -> list[list[str]]:
     for row in range(1, 2 * rows + 1, 2):
         for col in range(1, 2 * cols + 1, 2):
             new_grid[row][col] = "   "
-    #| と |の間に３マス分スペースを置く
+    #| と |の間に３スペースを置く
 
     for row in range(0, 2 * rows + 1, 2):
         for col in range(1, 2 * cols + 1, 2):
             new_grid[row][col] = "   "
-    # + と +　の間に3マス分スペースを置く
+    # + と +　の間に3スペースを置く
 
-    # # ここまでで壁のないgridが完成
+    #  ↓ここまでで壁のない No_wall_gridが完成
     #   +   +   +   +
 
     #   +   +   +   +
@@ -35,9 +36,9 @@ def make_grid(maze: MazeGenerator) -> list[list[str]]:
 
     for y in range(rows):
         for x in range(cols):
-            cell = maze.grid[y][x]  # こっちは　3x3の座標だからxとy
+            cell = maze.grid[y][x]#こっちは3x3の座標だからxとy　row(行)=y col(列)=y
             if cell.walls["north"]:
-                new_grid[2 * y][2 * x + 1] = "---"  # こっちはASCII gridの座標
+                new_grid[2 * y][2 * x + 1] = "---"  #こっちはASCII_gridの座標
             if cell.walls["south"]:
                 new_grid[2 * y + 2][2 * x + 1] = "---"
             if cell.walls["east"]:
@@ -120,17 +121,21 @@ def make_test_grid():
     return grid
 
 
+def render(display_grid: list[list[str]]) -> None:
+    new_grid = []
+    for i in display_grid:
+        new_grid.append("".join(i))
+    print("\n".join(new_grid))
+
+
 def main() -> None:
 
     test_grid = make_test_grid()
     maze = MazeGenerator(width=3, height=3, seed=0, entry=(0, 0), exit=(2, 2))
     maze.grid = test_grid
     grid = make_grid(maze)
-    add_SG_grid = add_start_goal(maze, grid)
-    new_grid = []
-    for i in add_SG_grid:
-        new_grid.append("".join(i))
-    print("\n".join(new_grid))
+    default_grid = add_start_goal(maze, grid)
+    render(default_grid)
 
 
 if __name__ == "__main__":
