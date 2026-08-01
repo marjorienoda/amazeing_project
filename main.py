@@ -12,7 +12,7 @@ class Cell:
 
 
 class MazeGenerator:
-    def __init__(self, width, height, seed, entry, exit):
+    def __init__(self, width, height, seed, entry, exit, perfect):
         self.width = width
         self.height = height
         self.seed = seed
