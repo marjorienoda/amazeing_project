@@ -1,5 +1,3 @@
-from main import Cell, MazeGenerator
-
 def read_config(file: str) -> dict | None:
     try:
         with open(file) as f:
@@ -24,7 +22,7 @@ def read_config(file: str) -> dict | None:
 
 def convert_keys(key_dict: dict) -> dict | None:
     new_key_dict = {}
-    for key in key_dict:
+    for key in key_dict:  # items()を使った方がいいと警告が出るけど、動くのでそのままにしてる　必要ならitems()を使う形に修正する
         if key in ("WIDTH", "HEIGHT", "SEED"):
             converted_value = int(key_dict[key])
             new_key_dict[key.lower()] = converted_value
@@ -53,11 +51,18 @@ def main():
     key_dict = read_config("config.txt")
     if key_dict is None:
         return
+
+    print("=== read_config ===")
+    print(key_dict)
+
     keys = convert_keys(key_dict)
     if keys is None:
         return
-    output_file_name = keys.pop("output_file")
-    maze = MazeGenerator(**keys)
+
+    print("=== convert_keys ===")
+    print(keys)
+    # output_file_name = keys.pop("output_file")
+    # maze = MazeGenerator(**keys)
 
 
 if __name__ == "__main__":
