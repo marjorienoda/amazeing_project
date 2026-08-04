@@ -58,7 +58,7 @@ def add_start_goal(
     return grid
 
 
-def make_test_grid():
+def make_test_grid() -> list[list[Cell]]:
     cell_1 = Cell(x=0, y=0)
     cell_2 = Cell(x=1, y=0)
     cell_3 = Cell(x=2, y=0)
@@ -120,19 +120,20 @@ def make_test_grid():
     return grid
 
 
-def change_wall_color(grid: list[list[str]], color: str) -> list[list[str]] | None:
+def change_wall_color(
+    grid: list[list[str]], color: str
+) -> list[list[str]] | None:
     color_dict: dict[str, str] = {
-        "red" : "\033[31m",
-        "green" : "\033[32m",
-        "yellow" : "\033[33m",
-        "blue" : "\033[34m"
+        "red": "\033[31m",
+        "green": "\033[32m",
+        "yellow": "\033[33m",
+        "blue": "\033[34m",
     }
     try:
         color_code = color_dict[color]
     except KeyError as e:
         print(f"That color is not available. : {e}")
         return None
-
 
     colored_grid = []
     for i in grid:
@@ -156,7 +157,9 @@ def render(display_grid: list[list[str]]) -> None:
 
 def main() -> None:
     test_grid = make_test_grid()
-    maze = MazeGenerator(width=3, height=3, seed=0, entry=(0, 0), exit=(2, 2))
+    maze = MazeGenerator(
+        width=3, height=3, seed=0, entry=(0, 0), exit=(2, 2), perfect=True
+    )
     maze.grid = test_grid
     grid = make_grid(maze)
     default_grid = add_start_goal(maze, grid)

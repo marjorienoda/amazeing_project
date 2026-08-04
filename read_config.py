@@ -1,4 +1,4 @@
-def read_config(file: str) -> dict | None:
+def read_config(file: str) -> dict[str, str] | None:
     try:
         with open(file) as f:
             data = f.read()
@@ -20,34 +20,36 @@ def read_config(file: str) -> dict | None:
     return key_dict
 
 
-def convert_keys(key_dict: dict) -> dict | None:
-    new_key_dict = {}
-    for key in key_dict:  # items()を使った方がいいと警告が出るけど、動くのでそのままにしてる　必要ならitems()を使う形に修正する
+def convert_keys(
+    key_dict: dict[str, str],
+) -> dict[str, int | tuple[int, int] | bool | str] | None:
+    new_key_dict: dict[str, int | tuple[int, int] | bool | str] = {}
+    for key, value in key_dict.items():
         if key in ("WIDTH", "HEIGHT", "SEED"):
-            converted_value = int(key_dict[key])
-            new_key_dict[key.lower()] = converted_value
+            converted_int_value = int(value)
+            new_key_dict[key.lower()] = converted_int_value
         elif key in ("ENTRY", "EXIT"):
-            coordinate: list[str] = key_dict[key].split(",")
-            converted_value = (int(coordinate[0]), int(coordinate[1]))
-            new_key_dict[key.lower()] = converted_value
+            coordinate: list[str] = value.split(",")
+            converted_tuple_value = (int(coordinate[0]), int(coordinate[1]))
+            new_key_dict[key.lower()] = converted_tuple_value
         elif key == "PERFECT":
-            if key_dict[key] == "True":
-                converted_value = True
-            elif key_dict[key] == "False":
-                converted_value = False
+            if value == "True":
+                converted_bool_value = True
+            elif value == "False":
+                converted_bool_value = False
             else:
                 print("key: PERFECT is bool.")
                 return None
-            new_key_dict[key.lower()] = converted_value
+            new_key_dict[key.lower()] = converted_bool_value
         elif key == "OUTPUT_FILE":
-            new_key_dict[key.lower()] = key_dict[key]
+            new_key_dict[key.lower()] = value
         else:
             print("Unknown Key")
             return None
     return new_key_dict
 
 
-def main():
+def main() -> None:
     key_dict = read_config("config.txt")
     if key_dict is None:
         return
