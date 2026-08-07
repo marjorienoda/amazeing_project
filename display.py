@@ -59,7 +59,7 @@ def add_start_goal(
     return grid
 
 
-def make_test_grid():
+def make_test_grid() -> list[list[Cell]]:
     cell_1 = Cell(x=0, y=0)
     cell_2 = Cell(x=1, y=0)
     cell_3 = Cell(x=2, y=0)
@@ -121,6 +121,34 @@ def make_test_grid():
     return grid
 
 
+def change_wall_color(
+    grid: list[list[str]], color: str
+) -> list[list[str]] | None:
+    color_dict: dict[str, str] = {
+        "red": "\033[31m",
+        "green": "\033[32m",
+        "yellow": "\033[33m",
+        "blue": "\033[34m",
+    }
+    try:
+        color_code = color_dict[color]
+    except KeyError as e:
+        print(f"That color is not available. : {e}")
+        return None
+
+    colored_grid = []
+    for i in grid:
+        colored_row = []
+        for cell_str in i:
+            if "-" in cell_str or "+" in cell_str or "|" in cell_str:
+                colored_cell = color_code + cell_str + "\033[0m"
+                colored_row.append(colored_cell)
+            else:
+                colored_row.append(cell_str)
+        colored_grid.append(colored_row)
+    return colored_grid
+
+
 def render(display_grid: list[list[str]]) -> None:
     new_grid = []
     for i in display_grid:
@@ -129,13 +157,42 @@ def render(display_grid: list[list[str]]) -> None:
 
 
 def main() -> None:
-
     test_grid = make_test_grid()
-    maze = MazeGenerator(width=3, height=3, seed=0, entry=(0, 0), exit=(2, 2))
+    maze = MazeGenerator(
+        width=3, height=3, seed=0, entry=(0, 0), exit=(2, 2), perfect=True
+    )
     maze.grid = test_grid
     grid = make_grid(maze)
     default_grid = add_start_goal(maze, grid)
     render(default_grid)
+    print()
+    color = None
+    while True:
+        print("=== A-Maze-ing ===")
+        print("1. Re-generate a new maze")
+        print("2. Show / Hide the shortest path")
+        print("3. Rotate the wall colours")
+        print("4. Quit")
+        selected_mode = input("Choice? (1-4): ")
+        if selected_mode == "1":
+            print(1)
+        elif selected_mode == "2":
+            print(2)
+        elif selected_mode == "3":
+            color = input("Color: ")
+        elif selected_mode == "4":
+            print("=== System closed ===")
+            break
+        else:
+            print("No mode")
+        if color:
+            display_grid = change_wall_color(default_grid, color)
+            if display_grid is None:
+                print("Color change was Failure")
+                display_grid = default_grid
+        else:
+            display_grid = default_grid
+        render(display_grid)
 
 
 if __name__ == "__main__":

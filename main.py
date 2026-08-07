@@ -12,11 +12,19 @@ class Cell:
 
 
 class MazeGenerator:
-    def __init__(self, width, height, seed, entry, exit):
+    def __init__(
+        self,
+        width: int,
+        height: int,
+        entry: tuple,
+        exit: tuple,
+        seed: int,
+        perfect: bool = False,
+    ):
         self.width = width
         self.height = height
-        self.seed = seed
         self.grid: list[list[Cell]] = []
         self.entry: tuple[int, int] = entry
         self.exit: tuple[int, int] = exit
-        self.perfect = False
+        self.perfect = perfect
+        self.seed = seed
