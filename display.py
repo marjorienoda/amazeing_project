@@ -1,5 +1,4 @@
-
-from main import Cell, MazeGenerator
+from maze_generator import Cell, MazeGenerator
 
 
 def make_grid(maze: MazeGenerator) -> list[list[str]]:
@@ -36,9 +35,11 @@ def make_grid(maze: MazeGenerator) -> list[list[str]]:
 
     for y in range(rows):
         for x in range(cols):
-            cell = maze.grid[y][x]#こっちは3x3の座標だからxとy　row(行)=y col(列)=y
+            cell = maze.grid[y][
+                x
+            ]  # こっちは3x3の座標だからxとy　row(行)=y col(列)=y
             if cell.walls["north"]:
-                new_grid[2 * y][2 * x + 1] = "---"  #こっちはASCII_gridの座標
+                new_grid[2 * y][2 * x + 1] = "---"  # こっちはASCII_gridの座標
             if cell.walls["south"]:
                 new_grid[2 * y + 2][2 * x + 1] = "---"
             if cell.walls["east"]:
