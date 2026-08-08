@@ -46,7 +46,7 @@ def main() -> None:
     stack: list[Cell] = []
     current_x, current_y = maze.entry
     current_cell = maze.grid[current_y][current_x]  # get_start_Cell()
-    # current_cell.visited = True
+    current_cell.visited = True
     stack.append(current_cell)
     random.seed(maze.seed)
     # ここまでがDFSする前の設定
@@ -54,8 +54,7 @@ def main() -> None:
     while stack:
         current_cell = stack[-1]
         # stack[len(stack) - 1]と同じ stack[0]だと前からになる→１番新しいのは末尾stack[-1]
-        current_cell.visited = True
-        can_move: list[(Cell, str)] = []  # 動くことができる方向のリスト
+        can_move: list[tuple[Cell, str]] = []  # 動くことができる方向のリスト
         north_cell = (current_cell.y - 1, current_cell.x)
         east_cell = (current_cell.y, current_cell.x + 1)
         south_cell = (current_cell.y + 1, current_cell.x)
@@ -84,6 +83,7 @@ def main() -> None:
             next_cell.walls[OPPOSITE[direction]] = False
             # 壁を壊す（２つのセル(current_cell , next_cell)の壁情報を変えないといけない。どの方向を壊すか→direction　next_cellは反対の方向になるのでOPPOSITE[direction]
             # Your generated data must be coherent: each neighbouring cell must have the same wall if any. E.g., it is forbidden to have a first cell with a wall on the east side, and the second cell behind that wall without a wall on the west side.
+            next_cell.visited = True
             stack.append(next_cell)
         else:
             stack.pop()
