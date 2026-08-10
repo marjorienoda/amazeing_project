@@ -1,5 +1,5 @@
 
-from main import Cell, MazeGenerator
+from generator import Cell, MazeGenerator
 
 
 def make_grid(maze: MazeGenerator) -> list[list[str]]:
@@ -157,14 +157,13 @@ def render(display_grid: list[list[str]]) -> None:
 
 
 def main() -> None:
-    test_grid = make_test_grid()
-    maze = MazeGenerator(
-        width=3, height=3, seed=0, entry=(0, 0), exit=(2, 2), perfect=True
-    )
-    maze.grid = test_grid
-    grid = make_grid(maze)
-    default_grid = add_start_goal(maze, grid)
-    render(default_grid)
+    # test_grid = make_test_grid()
+    maze = MazeGenerator(width=5, height=5, seed=42, entry=(0,0), exit=(4,4))
+    maze.generate()
+
+    ascii_grid = make_grid(maze)
+    final_grid = add_start_goal(maze, ascii_grid)
+    render(final_grid)
     print()
     color = None
     while True:
