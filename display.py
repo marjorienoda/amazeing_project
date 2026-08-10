@@ -158,7 +158,7 @@ def render(display_grid: list[list[str]]) -> None:
 
 def main() -> None:
     # test_grid = make_test_grid()
-    maze = MazeGenerator(width=5, height=5, seed=42, entry=(0,0), exit=(4,4))
+    maze = MazeGenerator(width=3, height=3, seed=42, entry=(0,0), exit=(2,2))
     maze.generate()
 
     ascii_grid = make_grid(maze)

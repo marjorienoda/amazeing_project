@@ -1,5 +1,13 @@
 import random
 
+OPPOSITE = {
+    "north": "south",
+    "east": "west",
+    "south": "north",
+    "west": "east",
+}  # 変わらないものだから、定数として扱いたい
+
+
 class Cell:
     def __init__(self, x: int, y: int):
         self.x = x
@@ -28,32 +36,34 @@ class MazeGenerator:
 
     def build_grid(self) -> list[list[Cell]]:
         grid = []
-        for h in range(0, self.height):
+        for h in range(self.height):
             row = []
-            for w in range(0, self.width):
+            for w in range(self.width):
                 current_cell = Cell(w, h)
                 row.append(current_cell)
             grid.append(row)
         return grid
     
-    def get_unvisited_neighbors(self, current_cell: Cell) -> list[Cell]:
-        neighbors: list[Cell] = []
-        if current_cell.y - 1 >= 0:
-            north_cell = self.grid[current_cell.y - 1][current_cell.x]
-            if not north_cell.visited:
-                neighbors.append(north_cell)
-        if current_cell.y + 1 < self.height:
-            south_cell = self.grid[current_cell.y + 1][current_cell.x]
-            if not south_cell.visited:
-                neighbors.append(south_cell)
-        if current_cell.x + 1 < self.width:
-            east_cell = self.grid[current_cell.y][current_cell.x + 1]
-            if not east_cell.visited:
-                neighbors.append(east_cell)
-        if current_cell.x - 1 >=  0:
-            west_cell = self.grid[current_cell.y][current_cell.x - 1]
-            if not west_cell.visited:
-                neighbors.append(west_cell)
+    def get_unvisited_neighbors(self, current_cell: Cell) -> list[tuple[Cell, str]]:
+        neighbors: list[tuple[Cell, str]] = []
+        north_cell = (current_cell.y - 1, current_cell.x)
+        east_cell = (current_cell.y, current_cell.x + 1)
+        south_cell = (current_cell.y + 1, current_cell.x)
+        west_cell = (current_cell.y, current_cell.x - 1)
+        list_direction: list[tuple[tuple[int, int], str]] = [
+            (north_cell, "north"),
+            (east_cell, "east"),
+            (south_cell, "south"),
+            (west_cell, "west"),
+        ]  # ループする度にリストを作ってるからあまり良くないかも、リストは外で作って値をループで更新する？
+        for coordinate, direction in list_direction:
+            y, x = coordinate
+            if (
+                x >= 0 and y >= 0 and x < self.width and y < self.height
+            ):  # limit_check
+                direction_cell = self.grid[y][x]
+                if direction_cell.visited is False:
+                    neighbors.append((direction_cell, direction))
         return neighbors
 
     def generate(self) -> None:
@@ -67,19 +77,10 @@ class MazeGenerator:
             current_cell = stack[-1]
             neighbors = self.get_unvisited_neighbors(current_cell)
             if neighbors:
-                next_cell = random.choice(neighbors)
-                if next_cell.y == current_cell.y - 1:
-                    next_cell.walls["south"] = False
-                    current_cell.walls["north"] = False
-                elif next_cell.y == current_cell.y + 1:
-                    next_cell.walls["north"] = False
-                    current_cell.walls["south"] = False
-                elif next_cell.x == current_cell.x + 1:
-                    next_cell.walls["west"] = False
-                    current_cell.walls["east"] = False
-                elif next_cell.x == current_cell.x - 1:
-                    next_cell.walls["east"] = False
-                    current_cell.walls["west"] = False
+                next_cell, direction = random.choice(neighbors)
+                current_cell.walls[direction] = False
+                next_cell.walls[OPPOSITE[direction]] = False
+                # 壁を壊す（２つのセル(current_cell , next_cell)の壁情報を変えないといけない。どの方向を壊すか→direction　next_cellは反対の方向になるのでOPPOSITE[direction]
                 next_cell.visited = True
                 stack.append(next_cell)
             else:
