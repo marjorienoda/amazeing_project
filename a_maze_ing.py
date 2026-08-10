@@ -1,4 +1,12 @@
-from display import add_start_goal, change_wall_color, make_grid, render
+import random
+
+from display import (
+    add_start_goal,
+    change_wall_color,
+    fill_42patern,
+    make_grid,
+    render,
+)
 from generator import MazeGenerator
 from read_config import convert_keys, read_config
 
@@ -11,7 +19,8 @@ def main() -> None:
     maze.generate()
 
     ascii_grid = make_grid(maze)
-    final_grid = add_start_goal(maze, ascii_grid)
+    final_grid = fill_42patern(maze, add_start_goal(maze, ascii_grid))
+
     render(final_grid)
     print()
     color = None
@@ -23,7 +32,15 @@ def main() -> None:
         print("4. Quit")
         selected_mode = input("Choice? (1-4): ")
         if selected_mode == "1":
-            print(1)
+            new_seed = random.randint(0, 100)
+            while new_seed == maze.seed:
+                new_seed = random.randint(0, 100)
+            maze.seed = new_seed
+            maze.generate()
+            ascii_grid = make_grid(
+                maze
+            )  # generateする度にこれもやらないと反映されない→display()みたいなのでまとめる？
+            final_grid = fill_42patern(maze, add_start_goal(maze, ascii_grid))
         elif selected_mode == "2":
             print(2)
         elif selected_mode == "3":
