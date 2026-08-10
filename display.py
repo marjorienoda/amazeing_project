@@ -1,4 +1,3 @@
-
 from generator import Cell, MazeGenerator
 
 
@@ -36,9 +35,11 @@ def make_grid(maze: MazeGenerator) -> list[list[str]]:
 
     for y in range(rows):
         for x in range(cols):
-            cell = maze.grid[y][x]#こっちは3x3の座標だからxとy　row(行)=y col(列)=y
+            cell = maze.grid[y][
+                x
+            ]  # こっちは3x3の座標だからxとy　row(行)=y col(列)=y
             if cell.walls["north"]:
-                new_grid[2 * y][2 * x + 1] = "---"  #こっちはASCII_gridの座標
+                new_grid[2 * y][2 * x + 1] = "---"  # こっちはASCII_gridの座標
             if cell.walls["south"]:
                 new_grid[2 * y + 2][2 * x + 1] = "---"
             if cell.walls["east"]:
@@ -158,7 +159,7 @@ def render(display_grid: list[list[str]]) -> None:
 
 def main() -> None:
     # test_grid = make_test_grid()
-    maze = MazeGenerator(width=3, height=3, seed=42, entry=(0,0), exit=(2,2))
+    maze = MazeGenerator(width=3, height=3, seed=42, entry=(0, 0), exit=(2, 2))
     maze.generate()
 
     ascii_grid = make_grid(maze)
@@ -185,12 +186,12 @@ def main() -> None:
         else:
             print("No mode")
         if color:
-            display_grid = change_wall_color(default_grid, color)
+            display_grid = change_wall_color(final_grid, color)
             if display_grid is None:
                 print("Color change was Failure")
-                display_grid = default_grid
+                display_grid = final_grid
         else:
-            display_grid = default_grid
+            display_grid = final_grid
         render(display_grid)
 
 
