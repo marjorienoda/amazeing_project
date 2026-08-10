@@ -1,8 +1,40 @@
 import random
 
 from display import add_start_goal, make_grid, render
-from maze_generator import Cell, MazeGenerator
 from read_config import convert_keys, read_config
+
+
+class Cell:
+    def __init__(self, x: int, y: int):
+        self.x = x
+        self.y = y
+        self.visited: bool = False
+        self.walls: dict[str, bool] = {
+            "north": True,
+            "south": True,
+            "east": True,
+            "west": True,
+        }
+
+
+class MazeGenerator:
+    def __init__(
+        self,
+        width: int,
+        height: int,
+        entry: tuple,
+        exit: tuple,
+        seed: int,
+        perfect: bool = False,
+    ):
+        self.width = width
+        self.height = height
+        self.grid: list[list[Cell]] = []
+        self.entry: tuple[int, int] = entry
+        self.exit: tuple[int, int] = exit
+        self.perfect = perfect
+        self.seed = seed
+
 
 OPPOSITE = {
     "north": "south",
@@ -13,27 +45,25 @@ OPPOSITE = {
 
 
 def main() -> None:
-    key_dict = read_config("config.txt")
-    if key_dict is None:
-        return
+    # key_dict = read_config("config.txt")
+    # if key_dict is None:
+    #     return
 
-    print("=== read_config ===")
-    print(key_dict)
+    # print("=== read_config ===")
+    # print(key_dict)
 
-    keys = convert_keys(key_dict)
-    if keys is None:
-        return
+    # keys = convert_keys(key_dict)
+    # if keys is None:
+    #     return
 
-    print("=== convert_keys ===")
-    print(keys)
+    # print("=== convert_keys ===")
+    # print(keys)
 
-    output_file_name = keys.pop("output_file")
+    # output_file_name = keys.pop("output_file")
 
     maze = MazeGenerator(
         **keys
     )  # こうするとまとめて渡せるみたい pythonの*はポインタじゃない
-    print(maze.entry)  # sample
-    print(output_file_name)  # sample
 
     maze.grid = []
     for y in range(maze.height):
@@ -41,8 +71,7 @@ def main() -> None:
         for x in range(maze.width):
             row.append(Cell(x, y))
         maze.grid.append(row)
-    # print(maze.grid[0][0].walls)  #test_code
-    # print(len(maze.grid), len(maze.grid[0])) #test_code
+
     stack: list[Cell] = []
     current_x, current_y = maze.entry
     current_cell = maze.grid[current_y][current_x]  # get_start_Cell()
@@ -82,7 +111,6 @@ def main() -> None:
             current_cell.walls[direction] = False
             next_cell.walls[OPPOSITE[direction]] = False
             # 壁を壊す（２つのセル(current_cell , next_cell)の壁情報を変えないといけない。どの方向を壊すか→direction　next_cellは反対の方向になるのでOPPOSITE[direction]
-            # Your generated data must be coherent: each neighbouring cell must have the same wall if any. E.g., it is forbidden to have a first cell with a wall on the east side, and the second cell behind that wall without a wall on the west side.
             next_cell.visited = True
             stack.append(next_cell)
         else:
@@ -95,3 +123,22 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+
+
+"north" : (0, 1)
+
+
+OPPOSITE = {
+    "north": "south",
+    "east": "west",
+    "south": "north",
+    "west": "east",
+} 
+
+add_x, add_y = 0, 1
+
+cell = direction_grid[current + add_y][current + add_x]
+maze.wall["north"] = False
+maze.wall[OPPOSITE["north"]] = False
