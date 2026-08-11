@@ -129,7 +129,7 @@ class MazeGenerator:
             for direction in cell.walls:
                 cell.walls[direction] = True
             cell.visited = True
-    
+
     def generate(self) -> None:
         self.grid = self.build_grid()
         close_cell_list = self.calc_42patern()
@@ -187,4 +187,3 @@ class MazeGenerator:
             current = (prev_cell.x, prev_cell.y)
         path.reverse()
         return(f"".join(path))
-        
