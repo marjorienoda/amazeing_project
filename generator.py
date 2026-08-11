@@ -130,6 +130,28 @@ class MazeGenerator:
                 cell.walls[direction] = True
             cell.visited = True
 
+    def get_dead_ends(self) -> list[Cell]:
+        dead_ends = []
+        for h in range(self.height):
+            for w in range(self.width):
+                current_cell = self.grid[h][w]
+                walls_count = sum(1 for val in current_cell.walls.values() if val is True)
+                if walls_count == 3:
+                    dead_ends.append(current_cell)
+        return dead_ends
+
+    def braid(self) -> None:
+        dead_ends = self.get_dead_ends()
+        for current_cell in dead_ends:
+            list_directions: list[tuple[Cell, str]] = []
+            valid_neighbors: list[tuple[Cell, str]] = self.get_valid_neighbors(current_cell)
+            for cell, direction in valid_neighbors:
+                if current_cell.walls[direction] is True:
+                    list_directions.append((cell, direction))
+            next_cell, chosen_direction = random.choice(list_directions)
+            current_cell.walls[chosen_direction] = False
+            next_cell.walls[OPPOSITE[chosen_direction]] = False
+
     def generate(self) -> None:
         self.grid = self.build_grid()
         close_cell_list = self.calc_42patern()
@@ -156,8 +178,14 @@ class MazeGenerator:
                 stack.append(next_cell)
             else:
                 stack.pop()
+        
+        if self.perfect is False:
+            self.braid()
     
-    
+    def fix_large_open_area(self) -> None:
+        for y in range(self.height - 2):
+            for x in range(self.width - 2):
+                
     def solve(self) -> str:
         start_cell = self.grid[self.entry[1]][self.entry[0]]
         queue = deque()
