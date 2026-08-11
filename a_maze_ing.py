@@ -1,29 +1,29 @@
 import random
+import sys
 
 from display import (
-    add_start_goal,
+    build_display_grid,
     change_wall_color,
-    fill_42patern,
-    make_grid,
     render,
+    show_solve,
 )
 from generator import MazeGenerator
+from make_outputfile import calc_wall_sum, convert_hex
 from read_config import convert_keys, read_config
 
 
 def main() -> None:
-    # test_grid = make_test_grid()
     key_dict = read_config("config.txt")
     converted_keys = convert_keys(key_dict)
     maze = MazeGenerator(**converted_keys)
     maze.generate()
 
-    ascii_grid = make_grid(maze)
-    final_grid = fill_42patern(maze, add_start_goal(maze, ascii_grid))
+    base_grid = build_display_grid(maze)
 
-    render(final_grid)
+    render(base_grid)
     print()
     color = None
+    show_path = False
     while True:
         print("=== A-Maze-ing ===")
         print("1. Re-generate a new maze")
@@ -37,12 +37,9 @@ def main() -> None:
                 new_seed = random.randint(0, 100)
             maze.seed = new_seed
             maze.generate()
-            ascii_grid = make_grid(
-                maze
-            )  # generateする度にこれもやらないと反映されない→display()みたいなのでまとめる？
-            final_grid = fill_42patern(maze, add_start_goal(maze, ascii_grid))
+            base_grid = build_display_grid(maze)
         elif selected_mode == "2":
-            print(2)
+            show_path = not show_path  # 選ぶたびに逆転させる
         elif selected_mode == "3":
             color = input("Color: ")
         elif selected_mode == "4":
@@ -51,13 +48,39 @@ def main() -> None:
         else:
             print("No mode")
         if color:
-            display_grid = change_wall_color(final_grid, color)
+            display_grid = change_wall_color(base_grid, color)
             if display_grid is None:
                 print("Color change was Failure")
-                display_grid = final_grid
+                display_grid = base_grid
         else:
-            display_grid = final_grid
+            display_grid = base_grid
+
+        if show_path:
+            display_grid = show_solve(maze.solve(), maze, display_grid)
         render(display_grid)
+
+        output = []
+        for cells_list in maze.grid:
+            row = []
+            for cell in cells_list:
+                row.append(convert_hex(calc_wall_sum(cell.walls)))
+            row.append("\n")
+            output.append("".join(row))
+        data = "".join(output)
+        data += "\n\n\n"
+        x, y = maze.entry
+        data += f"{x},{y}"
+        data += "\n"
+        x, y = maze.exit
+        data += f"{x},{y}"
+        data += "\n"
+        data += maze.solve()
+        data += "\n"
+        try:
+            with open(maze.output_file, "w") as f:
+                f.write(data)
+        except OSError as e:
+            print(f"{e}", file=sys.stderr)
 
 
 if __name__ == "__main__":

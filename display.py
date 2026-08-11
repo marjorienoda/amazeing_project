@@ -1,5 +1,19 @@
 from generator import MazeGenerator
 
+DIRECTION_DELTA = {"N": (-1, 0), "E": (0, 1), "S": (1, 0), "W": (0, -1)}
+
+
+def build_display_grid(maze: MazeGenerator) -> list[list[str]]:
+    ascii_grid = make_grid(maze)
+    base_grid = fill_42patern(maze, add_start_goal(maze, ascii_grid))
+    return base_grid
+
+
+def to_grid_coord(x: int, y: int) -> tuple[int, int]:
+    grid_y = 2 * y + 1
+    grid_x = 2 * x + 1
+    return (grid_y, grid_x)
+
 
 def make_grid(maze: MazeGenerator) -> list[list[str]]:
     rows = len(maze.grid)
@@ -98,50 +112,37 @@ def change_wall_color(
     return colored_grid
 
 
+def show_solve(
+    path: str, maze: MazeGenerator, grid: list[list[str]]
+) -> list[list[str]]:
+    solve_grid: list[list[str]] = [] #show/hideで切り替えるために直接上書きせず、新しいgridをつくる
+    for row in grid:#gridの内容をコピーするためにループしてる
+        solve_grid.append(list(row))
+    current_x, current_y = maze.entry
+    for direction in path: #"ESNWE..."から1文字を取り出す
+        delta_y, delta_x = DIRECTION_DELTA[direction]
+        next_x = current_x + delta_x
+        next_y = current_y + delta_y
+        next_grid_y, next_grid_x = to_grid_coord(next_x, next_y)
+        if (next_x, next_y) != maze.exit:
+            solve_grid[next_grid_y][next_grid_x] = (
+                "\033[96m" + " * " + "\033[0m"
+            )
+        current_grid_y, current_grid_x = to_grid_coord(current_x, current_y)
+        wall_grid_y = (current_grid_y + next_grid_y) // 2
+        wall_grid_x = (current_grid_x + next_grid_x) // 2
+        if direction == "E" or direction == "W":
+            solve_grid[wall_grid_y][wall_grid_x] = "\033[96m" + "*" + "\033[0m"
+        else:
+            solve_grid[wall_grid_y][wall_grid_x] = (
+                "\033[96m" + " * " + "\033[0m"
+            )
+        current_x, current_y = next_x, next_y
+    return solve_grid
+
+
 def render(display_grid: list[list[str]]) -> None:
     new_grid = []
     for i in display_grid:
         new_grid.append("".join(i))
     print("\n".join(new_grid))
-
-
-# def main() -> None:
-#     # test_grid = make_test_grid()
-#     maze = MazeGenerator(width=3, height=3, seed=42, entry=(0, 0), exit=(2, 2))
-#     maze.generate()
-
-#     ascii_grid = make_grid(maze)
-#     final_grid = add_start_goal(maze, ascii_grid)
-#     render(final_grid)
-#     print()
-#     color = None
-#     while True:
-#         print("=== A-Maze-ing ===")
-#         print("1. Re-generate a new maze")
-#         print("2. Show / Hide the shortest path")
-#         print("3. Rotate the wall colours")
-#         print("4. Quit")
-#         selected_mode = input("Choice? (1-4): ")
-#         if selected_mode == "1":
-#             print(1)
-#         elif selected_mode == "2":
-#             print(2)
-#         elif selected_mode == "3":
-#             color = input("Color: ")
-#         elif selected_mode == "4":
-#             print("=== System closed ===")
-#             break
-#         else:
-#             print("No mode")
-#         if color:
-#             display_grid = change_wall_color(final_grid, color)
-#             if display_grid is None:
-#                 print("Color change was Failure")
-#                 display_grid = final_grid
-#         else:
-#             display_grid = final_grid
-#         render(display_grid)
-
-
-# if __name__ == "__main__":
-#     main()
