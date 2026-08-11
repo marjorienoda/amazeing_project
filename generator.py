@@ -8,12 +8,14 @@ OPPOSITE = {
     "south": "north",
     "west": "east",
 }  # 変わらないものだから、定数として扱いたい
+
 DIRECTION_LETTERS = {
     "north": "N",
     "east": "E",
     "south": "S",
     "west": "W",
 }
+
 
 class Cell:
     def __init__(self, x: int, y: int):
@@ -43,7 +45,6 @@ class MazeGenerator:
         self.exit: tuple[int, int] = exit
         self.perfect = perfect
         self.output_file = output_file
-
 
     def build_grid(self) -> list[list[Cell]]:
         grid = []
@@ -77,9 +78,13 @@ class MazeGenerator:
                 direction_cell = self.grid[y][x]
                 valid_neighbors.append((direction_cell, direction))
         return valid_neighbors
-    
-    def get_unvisited_neighbors(self, current_cell: Cell) -> list[tuple[Cell, str]]:
-        valid_neighbors: list[tuple[Cell, str]] = self.get_valid_neighbors(current_cell)
+
+    def get_unvisited_neighbors(
+        self, current_cell: Cell
+    ) -> list[tuple[Cell, str]]:
+        valid_neighbors: list[tuple[Cell, str]] = self.get_valid_neighbors(
+            current_cell
+        )
         unvisited_neighbors: list[tuple[Cell, str]] = []
         for cell, direction in valid_neighbors:
             if cell.visited is False:
@@ -89,10 +94,14 @@ class MazeGenerator:
     def get_connected_neighbors(
         self, current_cell: Cell, visited_bfs: set[tuple[int, int]]
     ) -> list[tuple[Cell, str]]:
-        valid_neighbors: list[tuple[Cell, str]] = self.get_valid_neighbors(current_cell)
+        valid_neighbors: list[tuple[Cell, str]] = self.get_valid_neighbors(
+            current_cell
+        )
         connected_neighbors: list[tuple[Cell, str]] = []
         for cell, direction in valid_neighbors:
-            if (cell.x, cell.y) not in visited_bfs and current_cell.walls[direction] is False:
+            if (cell.x, cell.y) not in visited_bfs and current_cell.walls[
+                direction
+            ] is False:
                 connected_neighbors.append((cell, direction))
         return connected_neighbors
 
@@ -130,15 +139,35 @@ class MazeGenerator:
                 cell.walls[direction] = True
             cell.visited = True
 
+    def get_dead_ends(self) -> list[Cell]:
+        dead_ends = []
+        for h in range(self.height):
+            for w in range(self.width):
+                current_cell = self.grid[h][w]
+                walls_count = sum(
+                    1 for val in current_cell.walls.values() if val is True
+                )
+                if walls_count == 3:
+                    dead_ends.append(current_cell)
+        return dead_ends
+
+    def braid(self) -> None:
+        dead_ends = self.get_dead_ends()
+        for current_cell in dead_ends:
+            list_directions: list[tuple[Cell, str]] = []
+            valid_neighbors: list[tuple[Cell, str]] = self.get_valid_neighbors(
+                current_cell
+            )
+            for cell, direction in valid_neighbors:
+                if current_cell.walls[direction] is True:
+                    list_directions.append((cell, direction))
+            next_cell, chosen_direction = random.choice(list_directions)
+            current_cell.walls[chosen_direction] = False
+            next_cell.walls[OPPOSITE[chosen_direction]] = False
+
     def generate(self) -> None:
         self.grid = self.build_grid()
         close_cell_list = self.calc_42patern()
-        if not (self.entry in close_cell_list) or (
-            self.exit in close_cell_list
-        ):
-            self.close_cells(close_cell_list)
-        else:
-            raise ValueError("input error", file=sys.stderr)
         random.seed(self.seed)
         stack: list[Cell] = []
         start_cell = self.grid[self.entry[1]][self.entry[0]]
@@ -157,6 +186,14 @@ class MazeGenerator:
             else:
                 stack.pop()
 
+            if self.perfect is False:
+                self.braid()
+        if not (self.entry in close_cell_list) or (
+            self.exit in close_cell_list
+        ):
+            self.close_cells(close_cell_list)
+        else:
+            raise ValueError("input error", file=sys.stderr)
 
     def solve(self) -> str:
         start_cell = self.grid[self.entry[1]][self.entry[0]]
@@ -168,15 +205,23 @@ class MazeGenerator:
 
         while queue:
             current_cell = queue.popleft()
-            if current_cell.x == self.exit[0] and current_cell.y == self.exit[1]:
+            if (
+                current_cell.x == self.exit[0]
+                and current_cell.y == self.exit[1]
+            ):
                 break
             else:
-                connected_neighbors = self.get_connected_neighbors(current_cell, visited_bfs)
+                connected_neighbors = self.get_connected_neighbors(
+                    current_cell, visited_bfs
+                )
                 for next_cell, direction in connected_neighbors:
                     visited_bfs.add((next_cell.x, next_cell.y))
-                    came_from_dic[(next_cell.x, next_cell.y)] = (current_cell, direction)
+                    came_from_dic[(next_cell.x, next_cell.y)] = (
+                        current_cell,
+                        direction,
+                    )
                     queue.append(next_cell)
-        
+
         path: list[str] = []
         current = (self.exit[0], self.exit[1])
         entry_cell = (self.entry[0], self.entry[1])
@@ -186,4 +231,4 @@ class MazeGenerator:
             path.append(letter)
             current = (prev_cell.x, prev_cell.y)
         path.reverse()
-        return(f"".join(path))
+        return "".join(path)
