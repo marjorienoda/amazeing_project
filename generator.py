@@ -96,6 +96,40 @@ class MazeGenerator:
                 connected_neighbors.append((cell, direction))
         return connected_neighbors
 
+    def calc_42patern(self) -> list[tuple[int, int]]:
+        patern_height = 5
+        patern_width = 7
+        patern_42 = ["1000111", "1000001", "1110111", "0010100", "0010111"]
+        center_y, center_x = (
+            self.height // 2,
+            self.width // 2,
+        )  # //にすれば、整数だけになる（小数切り捨て)
+        close_cells: list[tuple[int, int]] = []
+        if self.width >= patern_width + 2 and self.height >= patern_height + 2:
+            start_y = center_y - (patern_height // 2)
+            start_x = center_x - (patern_width // 2)
+            for y_index, row in enumerate(patern_42):
+                for x_index, bit in enumerate(row):
+                    if bit == "1":
+                        close_cells.append(
+                            (start_y + y_index, start_x + x_index)
+                        )
+        else:
+            raise ValueError(
+                f"42 pattern requires width >= {patern_width + 2},"
+                f" and height >= {patern_height + 2}.",
+                f"Current: width={self.width}, height={self.height}",
+                file=sys.stderr,
+            )
+        return close_cells
+
+    def close_cells(self, cells_list: list[tuple[int, int]]) -> None:
+        for cell_y, cell_x in cells_list:
+            cell = self.grid[cell_y][cell_x]
+            for direction in cell.walls:
+                cell.walls[direction] = True
+            cell.visited = True
+    
     def generate(self) -> None:
         self.grid = self.build_grid()
         close_cell_list = self.calc_42patern()
