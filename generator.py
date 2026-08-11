@@ -1,5 +1,6 @@
 import random
 import sys
+from collections import deque
 
 OPPOSITE = {
     "north": "south",
@@ -7,7 +8,12 @@ OPPOSITE = {
     "south": "north",
     "west": "east",
 }  # 変わらないものだから、定数として扱いたい
-
+DIRECTION_LETTERS = {
+    "north": "N",
+    "east": "E",
+    "south": "S",
+    "west": "W",
+}
 
 class Cell:
     def __init__(self, x: int, y: int):
@@ -38,6 +44,7 @@ class MazeGenerator:
         self.perfect = perfect
         self.output_file = output_file
 
+
     def build_grid(self) -> list[list[Cell]]:
         grid = []
         for h in range(self.height):
@@ -48,10 +55,10 @@ class MazeGenerator:
             grid.append(row)
         return grid
 
-    def get_unvisited_neighbors(
+    def get_valid_neighbors(
         self, current_cell: Cell
     ) -> list[tuple[Cell, str]]:
-        neighbors: list[tuple[Cell, str]] = []
+        valid_neighbors: list[tuple[Cell, str]] = []
         north_cell = (current_cell.y - 1, current_cell.x)
         east_cell = (current_cell.y, current_cell.x + 1)
         south_cell = (current_cell.y + 1, current_cell.x)
@@ -61,16 +68,33 @@ class MazeGenerator:
             (east_cell, "east"),
             (south_cell, "south"),
             (west_cell, "west"),
-        ]  # ループする度にリストを作ってるからあまり良くないかも、リストは外で作って値をループで更新する？
+        ]
         for coordinate, direction in list_direction:
             y, x = coordinate
             if (
                 x >= 0 and y >= 0 and x < self.width and y < self.height
             ):  # limit_check
                 direction_cell = self.grid[y][x]
-                if direction_cell.visited is False:
-                    neighbors.append((direction_cell, direction))
-        return neighbors
+                valid_neighbors.append((direction_cell, direction))
+        return valid_neighbors
+    
+    def get_unvisited_neighbors(self, current_cell: Cell) -> list[tuple[Cell, str]]:
+        valid_neighbors: list[tuple[Cell, str]] = self.get_valid_neighbors(current_cell)
+        unvisited_neighbors: list[tuple[Cell, str]] = []
+        for cell, direction in valid_neighbors:
+            if cell.visited is False:
+                unvisited_neighbors.append((cell, direction))
+        return unvisited_neighbors
+
+    def get_connected_neighbors(
+        self, current_cell: Cell, visited_bfs: set[tuple[int, int]]
+    ) -> list[tuple[Cell, str]]:
+        valid_neighbors: list[tuple[Cell, str]] = self.get_valid_neighbors(current_cell)
+        connected_neighbors: list[tuple[Cell, str]] = []
+        for cell, direction in valid_neighbors:
+            if (cell.x, cell.y) not in visited_bfs and current_cell.walls[direction] is False:
+                connected_neighbors.append((cell, direction))
+        return connected_neighbors
 
     def calc_42patern(self) -> list[tuple[int, int]]:
         patern_height = 5
@@ -132,3 +156,34 @@ class MazeGenerator:
                 stack.append(next_cell)
             else:
                 stack.pop()
+
+
+    def solve(self) -> str:
+        start_cell = self.grid[self.entry[1]][self.entry[0]]
+        queue = deque()
+        queue.append(start_cell)
+        visited_bfs: set[tuple[int, int]] = set()
+        visited_bfs.add((start_cell.x, start_cell.y))
+        came_from_dic: dict[tuple[int, int], tuple[Cell, str]] = {}
+
+        while queue:
+            current_cell = queue.popleft()
+            if current_cell.x == self.exit[0] and current_cell.y == self.exit[1]:
+                break
+            else:
+                connected_neighbors = self.get_connected_neighbors(current_cell, visited_bfs)
+                for next_cell, direction in connected_neighbors:
+                    visited_bfs.add((next_cell.x, next_cell.y))
+                    came_from_dic[(next_cell.x, next_cell.y)] = (current_cell, direction)
+                    queue.append(next_cell)
+        
+        path: list[str] = []
+        current = (self.exit[0], self.exit[1])
+        entry_cell = (self.entry[0], self.entry[1])
+        while current != entry_cell:
+            prev_cell, direction = came_from_dic[current]
+            letter = DIRECTION_LETTERS[direction]
+            path.append(letter)
+            current = (prev_cell.x, prev_cell.y)
+        path.reverse()
+        return(f"".join(path))
