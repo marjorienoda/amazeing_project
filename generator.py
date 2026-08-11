@@ -1,4 +1,5 @@
 import random
+import sys
 from collections import deque
 
 OPPOSITE = {
@@ -32,7 +33,9 @@ class Cell:
 
 
 class MazeGenerator:
-    def __init__(self, width, height, seed, entry, exit, perfect=False):
+    def __init__(
+        self, width, height, seed, entry, exit, output_file, perfect=False
+    ):
         self.width = width
         self.height = height
         self.seed = seed
@@ -40,6 +43,7 @@ class MazeGenerator:
         self.entry: tuple[int, int] = entry
         self.exit: tuple[int, int] = exit
         self.perfect = perfect
+        self.output_file = output_file
 
     def build_grid(self) -> list[list[Cell]]:
         grid = []
@@ -50,8 +54,10 @@ class MazeGenerator:
                 row.append(current_cell)
             grid.append(row)
         return grid
-    
-    def get_valid_neighbors(self, current_cell: Cell) -> list[tuple[Cell, str]]:
+
+    def get_valid_neighbors(
+        self, current_cell: Cell
+    ) -> list[tuple[Cell, str]]:
         valid_neighbors: list[tuple[Cell, str]] = []
         north_cell = (current_cell.y - 1, current_cell.x)
         east_cell = (current_cell.y, current_cell.x + 1)
@@ -92,6 +98,13 @@ class MazeGenerator:
 
     def generate(self) -> None:
         self.grid = self.build_grid()
+        close_cell_list = self.calc_42patern()
+        if not (self.entry in close_cell_list) or (
+            self.exit in close_cell_list
+        ):
+            self.close_cells(close_cell_list)
+        else:
+            raise ValueError("input error", file=sys.stderr)
         random.seed(self.seed)
         stack: list[Cell] = []
         start_cell = self.grid[self.entry[1]][self.entry[0]]
