@@ -118,8 +118,7 @@ class MazeGenerator:
             raise ValueError(
                 f"42 pattern requires width >= {patern_width + 2},"
                 f" and height >= {patern_height + 2}.",
-                f"Current: width={self.width}, height={self.height}",
-                file=sys.stderr,
+                f"Current: width={self.width}, height={self.height}"
             )
         return close_cells
 
@@ -128,17 +127,97 @@ class MazeGenerator:
             cell = self.grid[cell_y][cell_x]
             for direction in cell.walls:
                 cell.walls[direction] = True
+            for neighbor, direction in self.get_valid_neighbors(cell):
+                neighbor.walls[OPPOSITE[direction]] = True
             cell.visited = True
+
+    def get_dead_ends(self) -> list[Cell]:
+        dead_ends = []
+        for h in range(self.height):
+            for w in range(self.width):
+                current_cell = self.grid[h][w]
+                walls_count = sum(1 for val in current_cell.walls.values() if val is True)
+                if walls_count == 3:
+                    dead_ends.append(current_cell)
+        return dead_ends
+
+    def braid(self, pattern_cells: list[tuple[int, int]]) -> None:
+        dead_ends = self.get_dead_ends()
+        for current_cell in dead_ends:
+            list_directions: list[tuple[Cell, str]] = []
+            valid_neighbors: list[tuple[Cell, str]] = self.get_valid_neighbors(current_cell)
+            for cell, direction in valid_neighbors:
+                if current_cell.walls[direction] is True:
+                    if (cell.y, cell.x) in pattern_cells:
+                        continue
+                    list_directions.append((cell, direction))
+            if not list_directions:
+                continue
+            next_cell, chosen_direction = random.choice(list_directions)
+            current_cell.walls[chosen_direction] = False
+            next_cell.walls[OPPOSITE[chosen_direction]] = False
+    
+    def is_block_fully_connected(self, x: int, y: int) -> bool:
+        block_cells: set[tuple[int, int]] = set()
+        for row in range(y, y + 3):
+            for col in range(x, x + 3):
+                block_cells.add((col, row))
+
+        start_cell = self.grid[y][x]
+        queue = deque()
+        queue.append(start_cell)
+        visited: set[tuple[int, int]] = set()
+        visited.add((x, y))
+        while queue:
+            current_cell = queue.popleft()
+            connected_neighbors = self.get_connected_neighbors(current_cell, visited)
+            for next_cell, direction in connected_neighbors: 
+                if((next_cell.x, next_cell.y) in block_cells):
+                    visited.add((next_cell.x, next_cell.y))
+                    queue.append(next_cell)
+        return len(block_cells) == len(visited)
+
+    def fix_large_open_areas(self):
+        for row in range(self.height - 2):
+            for col in range(self.width - 2):
+                if self.is_block_fully_connected(col, row):
+                    block_cells: set[tuple[int, int]] = set()
+                    candidates: list[tuple[Cell, Cell, str]] = []
+                    for r in range(row, row + 3):
+                        for c in range(col, col + 3):
+                            block_cells.add((c, r))
+                            current_cell = self.grid[r][c]
+                            valid_neighbors: list[tuple[Cell, str]] = self.get_valid_neighbors(current_cell)
+                            for cell, direction in valid_neighbors:
+                                if current_cell.walls[direction] is False and (cell.x, cell.y) in block_cells:
+                                    candidates.append((current_cell, cell, direction))
+                    while candidates:
+                        cell_to_close, neighbor_cell, direction_to_close = random.choice(candidates)
+
+                        cell_to_close.walls[direction_to_close] = True
+                        neighbor_cell.walls[OPPOSITE[direction_to_close]] = True
+
+                        if not self.is_block_fully_connected(col, row):
+                            break
+                        else:
+                            cell_to_close.walls[direction_to_close] = False
+                            neighbor_cell.walls[OPPOSITE[direction_to_close]] = False
+                            if not self.is_block_fully_connected(col, row):
+                                break
+                            candidates.remove((cell_to_close, neighbor_cell, direction_to_close))
 
     def generate(self) -> None:
         self.grid = self.build_grid()
         close_cell_list = self.calc_42patern()
-        if not (self.entry in close_cell_list) or (
+        if (self.entry in close_cell_list) or (
             self.exit in close_cell_list
         ):
-            self.close_cells(close_cell_list)
+            raise ValueError(
+                f"Entry {self.entry} or exit {self.exit} overlaps with the '42' pattern; "
+                f"choose different entry/exit coordinates or a larger maze size."
+            )
         else:
-            raise ValueError("input error", file=sys.stderr)
+            self.close_cells(close_cell_list)
         random.seed(self.seed)
         stack: list[Cell] = []
         start_cell = self.grid[self.entry[1]][self.entry[0]]
@@ -156,8 +235,13 @@ class MazeGenerator:
                 stack.append(next_cell)
             else:
                 stack.pop()
-    
-    
+        
+        if self.perfect is False:
+            self.braid(close_cell_list)
+
+        self.fix_large_open_areas()
+
+
     def solve(self) -> str:
         start_cell = self.grid[self.entry[1]][self.entry[0]]
         queue = deque()
