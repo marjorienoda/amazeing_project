@@ -1,5 +1,4 @@
 import random
-import sys
 
 from display import (
     build_display_grid,
@@ -8,7 +7,7 @@ from display import (
     show_solve,
 )
 from generator import MazeGenerator
-from make_outputfile import calc_wall_sum, convert_hex
+from make_outputfile import make_output
 from read_config import convert_keys, read_config
 
 
@@ -58,29 +57,7 @@ def main() -> None:
         if show_path:
             display_grid = show_solve(maze.solve(), maze, display_grid)
         render(display_grid)
-
-        output = []
-        for cells_list in maze.grid:
-            row = []
-            for cell in cells_list:
-                row.append(convert_hex(calc_wall_sum(cell.walls)))
-            row.append("\n")
-            output.append("".join(row))
-        data = "".join(output)
-        data += "\n\n\n"
-        x, y = maze.entry
-        data += f"{x},{y}"
-        data += "\n"
-        x, y = maze.exit
-        data += f"{x},{y}"
-        data += "\n"
-        data += maze.solve()
-        data += "\n"
-        try:
-            with open(maze.output_file, "w") as f:
-                f.write(data)
-        except OSError as e:
-            print(f"{e}", file=sys.stderr)
+        make_output(maze)
 
 
 if __name__ == "__main__":
