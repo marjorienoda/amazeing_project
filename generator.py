@@ -34,13 +34,13 @@ class Cell:
 
 class MazeGenerator:
     def __init__(
-        self, 
-        width: int, 
-        height: int, 
-        entry: tuple[int, int], 
-        exit: tuple[int, int], 
-        output_file: str, 
-        perfect: bool = False, 
+        self,
+        width: int,
+        height: int,
+        entry: tuple[int, int],
+        exit: tuple[int, int],
+        output_file: str,
+        perfect: bool = False,
         seed: int | None = None
     ):
         self.width = width

@@ -22,7 +22,7 @@ def main() -> None:
     if len(sys.argv) < 2:
         print(
             "Error: missing config file argument. "
-            "Usage: python3 a_maze_ing.py <config_file>", 
+            "Usage: python3 a_maze_ing.py <config_file>",
             file=sys.stderr
         )
         sys.exit(1)
@@ -31,9 +31,9 @@ def main() -> None:
         check_required_keys(key_dict)
         converted_keys = convert_keys(key_dict)
         validate_entry_exit(
-            converted_keys["width"], 
-            converted_keys["height"], 
-            converted_keys["entry"], 
+            converted_keys["width"],
+            converted_keys["height"],
+            converted_keys["entry"],
             converted_keys["exit"]
         )
     except ConfigError as e:
