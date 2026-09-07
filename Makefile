@@ -18,7 +18,5 @@ lint-strict:
 clean:
 	rm -rf __pycache__ */__pycache__
 	rm -rf .mypy_cache */.mypy_cache
-	rm -rf .pytest_cache
-	rm -rf build dist *.egg-info
 
 .PHONY: all run lint lint-strict clean
