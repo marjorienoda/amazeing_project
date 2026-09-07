@@ -233,7 +233,7 @@ class MazeGenerator:
 
     def fix_large_open_areas(
         self,
-    ):
+    ) -> None:
         for row in range(self.height - 2):
             for col in range(self.width - 2):
                 if self.is_block_fully_connected(col, row):
