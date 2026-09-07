@@ -1,3 +1,4 @@
+import sys
 import random
 from collections import deque
 
@@ -15,6 +16,10 @@ DIRECTION_LETTERS = {
     "west": "W",
 }
 
+class CanNotMakePatern(Exception):
+    def __init__(self, message: str = "Error"):
+        super().__init__(message)
+
 
 class Cell:
     def __init__(self, x: int, y: int):
@@ -28,7 +33,7 @@ class Cell:
             "west": True,
         }
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"x= {self.x}, y={self.y} "
 
 
@@ -133,10 +138,10 @@ class MazeGenerator:
                             (start_y + y_index, start_x + x_index)
                         )
         else:
-            raise ValueError(
+            raise CanNotMakePatern(
                 f"42 pattern requires width >= {patern_width + 2},"
-                f" and height >= {patern_height + 2}.",
-                f"Current: width={self.width}, height={self.height}",
+                f" and height >= {patern_height + 2}."
+                f"Current: width={self.width}, height={self.height}"
             )
         return close_cells
 
@@ -253,7 +258,11 @@ class MazeGenerator:
 
     def generate(self) -> None:
         self.grid = self.build_grid()
-        close_cell_list = self.calc_42patern()
+        try:
+            close_cell_list: list[tuple[int, int]] = self.calc_42patern()
+        except CanNotMakePatern as e:
+            print(f"Can not make 42patern : {e}", file=sys.stderr)
+            close_cell_list = []
         entry_yx = (self.entry[1], self.entry[0])
         exit_yx = (self.exit[1], self.exit[0])
         # self.entry/self.exit は (x, y) 順だが、close_cell_list は (y, x) 順
