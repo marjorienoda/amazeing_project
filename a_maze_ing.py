@@ -1,4 +1,5 @@
 import random
+import sys
 
 from display import (
     build_display_grid,
@@ -8,14 +9,46 @@ from display import (
 )
 from generator import MazeGenerator
 from make_outputfile import make_output
-from read_config import convert_keys, read_config
+from read_config import (
+    check_required_keys,
+    convert_keys,
+    read_config,
+    validate_entry_exit,
+    ConfigError
+)
 
 
 def main() -> None:
-    key_dict = read_config("config.txt")
-    converted_keys = convert_keys(key_dict)
-    maze = MazeGenerator(**converted_keys)
-    maze.generate()
+    if len(sys.argv) < 2:
+        print(
+            "Error: missing config file argument. "
+            "Usage: python3 a_maze_ing.py <config_file>",
+            file=sys.stderr
+        )
+        sys.exit(1)
+    try:
+        key_dict = read_config(sys.argv[1])
+        check_required_keys(key_dict)
+        converted_keys = convert_keys(key_dict)
+        validate_entry_exit(
+            converted_keys["width"],
+            converted_keys["height"],
+            converted_keys["entry"],
+            converted_keys["exit"]
+        )
+    except ConfigError as e:
+        print(f"Config error: {e}", file=sys.stderr)
+        sys.exit(1)
+    try:
+        maze = MazeGenerator(**converted_keys)
+    except TypeError as e:
+        print(f"Missing or invalid key(s) in config.txt: {e}", file=sys.stderr)
+        sys.exit(1)
+    try:
+        maze.generate()
+    except ValueError as e:
+        print(f"Can not make maze: {e}", file=sys.stderr)
+        sys.exit(1)
 
     base_grid = build_display_grid(maze)
 
