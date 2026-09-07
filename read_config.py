@@ -1,3 +1,14 @@
+REQUIRED_KEYS = [
+    "WIDTH",
+    "HEIGHT",
+    "ENTRY",
+    "EXIT",
+    "OUTPUT_FILE",
+    "PERFECT"
+]
+# 必須キーを定数にした。
+
+
 class ConfigError(Exception):
     def __init__(self, message: str = "Error"):
         super().__init__(message)
@@ -24,9 +35,10 @@ def read_config(file: str) -> dict[str, str]:
     return key_dict
 
 
+# ↓convert_keysという名前だけど、ValueCheckもしてるから、名前を変えるべき？　or チェック部分を別関数に切り出す
 def convert_keys(
             key_dict: dict[str, str],
-        ) -> dict[str, int | tuple[int, int] | bool | str] | None:
+        ) -> dict[str, int | tuple[int, int] | bool | str]:
     new_key_dict: dict[str, int | tuple[int, int] | bool | str] = {}
     for key, value in key_dict.items():
         if key in ("WIDTH", "HEIGHT", "SEED"):
@@ -67,3 +79,58 @@ def convert_keys(
         else:
             raise ConfigError(f"Unknow argument in the config file: '{key}'")
     return new_key_dict
+
+
+# convertでは必須キーが含まれていない場合のエラーがチェックされない。ex) "WIDTH"がそもそもない場合、何もチェックされないで通る ので作った
+def check_required_keys(key_dict: dict[str, str]) -> None:
+    """Check whether entered keys contain required keys.
+
+    Args:
+        key_dict: A dictionary of entered config data,
+            e.g. {"WIDTH": "20", "HEIGHT": "30"}.
+
+    Raises:
+        ConfigError: If any required key is missing from `key_dict`.
+    """
+    input_keys = set(key_dict)
+    required_keys = set(REQUIRED_KEYS)
+    result = required_keys.difference(input_keys)
+    # requiredの中にあって、inputの中にないものだけ検出する。　完全一致ならFalse(空集合)になる
+    if result:
+        raise ConfigError(f"Not enough keys: {','.join(result)}")
+
+
+def validate_entry_exit(
+    width: int, height: int, entry: tuple[int, int], exit: tuple[int, int]
+) -> None:
+    """Check whether the "entry" and "exit" values are valid.
+
+    Check the following three items:
+        - Are the entry coordinates within the maze's boundaries?
+        - Are the exit coordinates within the maze's boundaries?
+        - Are "entry" and "exit" different from each other?
+
+    Args:
+        width: Width of the maze.
+        height: Height of the maze.
+        entry: Starting coordinates (x, y) of the maze.
+        exit: Ending coordinates (x, y) of the maze.
+
+    Raises:
+        ConfigError: If entry or exit is out of bounds, or if entry and exit
+            are the same.
+    """
+    entry_x, entry_y = entry
+    exit_x, exit_y = exit
+    if not (0 <= entry_x < width and 0 <= entry_y < height):
+        raise ConfigError(
+            f"Entry {entry} is out of bounds "
+            f"(width={width}, height={height})"
+        )
+    if not (0 <= exit_x < width and 0 <= exit_y < height):
+        raise ConfigError(
+            f"Exit {exit} is out of bounds "
+            f"(width={width}, height={height})"
+        )
+    if entry == exit:
+        raise ConfigError(f"Entry and exit must be different: {entry}")

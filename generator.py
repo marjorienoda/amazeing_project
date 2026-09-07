@@ -34,16 +34,26 @@ class Cell:
 
 class MazeGenerator:
     def __init__(
-        self, width, height, seed, entry, exit, output_file, perfect=False
+        self,
+        width: int,
+        height: int,
+        entry: tuple[int, int],
+        exit: tuple[int, int],
+        output_file: str,
+        perfect: bool = False,
+        seed: int | None = None
     ):
         self.width = width
         self.height = height
-        self.seed = seed
         self.grid: list[list[Cell]] = []
         self.entry: tuple[int, int] = entry
         self.exit: tuple[int, int] = exit
-        self.perfect = perfect
         self.output_file = output_file
+        self.perfect = perfect
+        if seed is None:
+            self.seed = random.randint(0, 100)
+        else:
+            self.seed = seed
 
     def build_grid(self) -> list[list[Cell]]:
         grid = []
@@ -233,10 +243,16 @@ class MazeGenerator:
     def generate(self) -> None:
         self.grid = self.build_grid()
         close_cell_list = self.calc_42patern()
-        if (self.entry in close_cell_list) or (self.exit in close_cell_list):
+        entry_yx = (self.entry[1], self.entry[0])
+        exit_yx = (self.exit[1], self.exit[0])
+        # self.entry/self.exit は (x, y) 順だが、close_cell_list は (y, x) 順
+        # （self.grid[y][x] でアクセスするため）なので、↓のifで比較する前に順序を揃える
+        if (entry_yx in close_cell_list) or (exit_yx in close_cell_list):
             raise ValueError(
-                f"Entry {self.entry} or exit {self.exit} overlaps with the '42' pattern; "
-                f"choose different entry/exit coordinates or a larger maze size."
+                f"Entry {self.entry} or exit {self.exit} "
+                "overlaps with the '42' pattern; "
+                "choose different entry/exit coordinates "
+                "or a larger maze size."
             )
         else:
             self.close_cells(close_cell_list)
