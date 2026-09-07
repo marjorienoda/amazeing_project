@@ -38,7 +38,7 @@ def read_config(file: str) -> dict[str, str]:
 # ↓convert_keysという名前だけど、ValueCheckもしてるから、名前を変えるべき？　or チェック部分を別関数に切り出す
 def convert_keys(
             key_dict: dict[str, str],
-        ) -> dict[str, int | tuple[int, int] | bool | str] | None:
+        ) -> dict[str, int | tuple[int, int] | bool | str]:
     new_key_dict: dict[str, int | tuple[int, int] | bool | str] = {}
     for key, value in key_dict.items():
         if key in ("WIDTH", "HEIGHT", "SEED"):
