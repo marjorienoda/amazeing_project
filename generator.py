@@ -191,55 +191,44 @@ class MazeGenerator:
                     queue.append(next_cell)
         return len(block_cells) == len(visited)
 
+    def identify_open_areas(self, row: int, col: int) -> list[tuple[Cell, Cell, str]]:
+        block_cells: set[tuple[int, int]] = set()
+        candidates: list[tuple[Cell, Cell, str]] = []
+        for r in range(row, row + 3):
+            for c in range(col, col + 3):
+                block_cells.add((c, r))
+                current_cell = self.grid[r][c]
+                valid_neighbors = self.get_valid_neighbors(current_cell)
+                for cell, direction in valid_neighbors:
+                    if current_cell.walls[direction] is False and (cell.x, cell.y) in block_cells:
+                        candidates.append((current_cell, cell, direction))
+        return candidates
+
+    def resolve_open_areas(self, row: int, col: int, candidates: list[tuple[Cell, Cell, str]]) -> None:
+        while candidates:
+            cell_to_close, neighbor_cell, direction_to_close = (
+                random.choice(candidates)
+            )
+
+            cell_to_close.walls[direction_to_close] = True
+            neighbor_cell.walls[OPPOSITE[direction_to_close]] = (
+                True
+            )
+            candidates.remove((
+                cell_to_close,neighbor_cell, direction_to_close
+            ))
+
+            if not self.is_block_fully_connected(col, row):
+                break
+
     def fix_large_open_areas(
         self,
-    ):  # インデントが多すぎるので、関数分けるべきかも？
+    ):
         for row in range(self.height - 2):
             for col in range(self.width - 2):
                 if self.is_block_fully_connected(col, row):
-                    block_cells: set[tuple[int, int]] = set()
-                    candidates: list[tuple[Cell, Cell, str]] = []
-                    for r in range(row, row + 3):
-                        for c in range(col, col + 3):
-                            block_cells.add((c, r))
-                            current_cell = self.grid[r][c]
-                            valid_neighbors: list[tuple[Cell, str]] = (
-                                self.get_valid_neighbors(current_cell)
-                            )
-                            for cell, direction in valid_neighbors:
-                                if (
-                                    current_cell.walls[direction] is False
-                                    and (cell.x, cell.y) in block_cells
-                                ):
-                                    candidates.append(
-                                        (current_cell, cell, direction)
-                                    )
-                    while candidates:
-                        cell_to_close, neighbor_cell, direction_to_close = (
-                            random.choice(candidates)
-                        )
-
-                        cell_to_close.walls[direction_to_close] = True
-                        neighbor_cell.walls[OPPOSITE[direction_to_close]] = (
-                            True
-                        )
-
-                        if not self.is_block_fully_connected(col, row):
-                            cell_to_close.walls[direction_to_close] = False
-                            neighbor_cell.walls[
-                                OPPOSITE[direction_to_close]
-                            ] = False
-                            break
-                        else:
-                            if not self.is_block_fully_connected(col, row):
-                                break
-                            candidates.remove(
-                                (
-                                    cell_to_close,
-                                    neighbor_cell,
-                                    direction_to_close,
-                                )
-                            )
+                    candidates = self.identify_open_areas(row, col)
+                    self.resolve_open_areas(row, col, candidates)
 
     def generate(self) -> None:
         self.grid = self.build_grid()
