@@ -1,4 +1,4 @@
-from generator import MazeGenerator
+from mazegen import MazeGenerator
 
 DIRECTION_DELTA = {"N": (-1, 0), "E": (0, 1), "S": (1, 0), "W": (0, -1)}
 

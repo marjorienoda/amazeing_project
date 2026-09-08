@@ -7,7 +7,7 @@ from display import (
     render,
     show_solve,
 )
-from generator import MazeGenerator
+from mazegen import MazeGenerator
 from make_outputfile import make_output
 from read_config import (
     check_required_keys,
