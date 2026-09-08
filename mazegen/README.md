@@ -79,6 +79,3 @@ print(path)   # e.g. "EESSWS"
   — the grid is empty until generation runs.
 - Calling `generate()` again (optionally after changing `maze.seed`) will
   regenerate the maze from scratch.
-- The `output_file` parameter is currently required for compatibility with
-  the A-Maze-ing CLI but is not read or written by this module directly;
-  file output is handled outside the reusable package.
