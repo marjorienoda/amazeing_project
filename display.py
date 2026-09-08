@@ -2,6 +2,13 @@ from mazegen import MazeGenerator
 
 DIRECTION_DELTA = {"N": (-1, 0), "E": (0, 1), "S": (1, 0), "W": (0, -1)}
 
+color_dict: dict[str, str] = {
+    "red": "\033[31m",
+    "green": "\033[32m",
+    "yellow": "\033[33m",
+    "blue": "\033[34m",
+}
+
 
 def build_display_grid(maze: MazeGenerator) -> list[list[str]]:
     ascii_grid = make_grid(maze)
@@ -87,12 +94,6 @@ def fill_42patern(
 def change_wall_color(
     grid: list[list[str]], color: str
 ) -> list[list[str]] | None:
-    color_dict: dict[str, str] = {
-        "red": "\033[31m",
-        "green": "\033[32m",
-        "yellow": "\033[33m",
-        "blue": "\033[34m",
-    }
     try:
         color_code = color_dict[color]
     except KeyError as e:
