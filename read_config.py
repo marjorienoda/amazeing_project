@@ -1,3 +1,10 @@
+from typing import TypedDict
+
+#  python3.10のtypingにはNotRequiredがない→3.10以降に対応だから、3.10でも使えるようにしたい
+#  →typing_extensions(typingより先行してNotRequiredが追加されている)に頼る
+#  よって、外部パッケージ(typing_extensions)をpip installしないといけない
+from typing_extensions import NotRequired
+
 REQUIRED_KEYS = [
     "WIDTH",
     "HEIGHT",
@@ -7,6 +14,16 @@ REQUIRED_KEYS = [
     "PERFECT"
 ]
 # 必須キーを定数にした。
+
+
+class MazeConfig(TypedDict):
+    width: int
+    height: int
+    entry: tuple[int, int]
+    exit: tuple[int, int]
+    output_file: str
+    perfect: bool
+    seed: NotRequired[int]  # NotRequired　あってもなくてもいい扱いになる
 
 
 class ConfigError(Exception):
@@ -35,50 +52,68 @@ def read_config(file: str) -> dict[str, str]:
     return key_dict
 
 
-# ↓convert_keysという名前だけど、ValueCheckもしてるから、名前を変えるべき？　or チェック部分を別関数に切り出す
-def convert_keys(
-            key_dict: dict[str, str],
-        ) -> dict[str, int | tuple[int, int] | bool | str]:
-    new_key_dict: dict[str, int | tuple[int, int] | bool | str] = {}
-    for key, value in key_dict.items():
-        if key in ("WIDTH", "HEIGHT", "SEED"):
-            try:
-                converted_int_value = int(value)
-            except ValueError:
-                raise ConfigError(
-                    f"Invalid type for the key '{key}': "
-                    f"expected an integer, got '{value}'"
-                )
-            if key in ("WIDTH", "HEIGHT") and converted_int_value <= 0:
-                raise ConfigError(f"Value for the key '{key}' is <= 0")
-            new_key_dict[key.lower()] = converted_int_value
-        elif key in ("ENTRY", "EXIT"):
-            coordinate: list[str] = value.split(",")
-            if len(coordinate) != 2:
-                raise ConfigError(f"Invalid input for the '{key}'")
-            try:
-                converted_tuple_value = (
-                    int(coordinate[0]),
-                    int(coordinate[1]),
-                )
-            except ValueError:
-                raise ConfigError(
-                    f"Invalid type for the key '{key}': expected an integer"
-                )
-            new_key_dict[key.lower()] = converted_tuple_value
-        elif key == "PERFECT":
-            if value == "True":
-                converted_bool_value = True
-            elif value == "False":
-                converted_bool_value = False
-            else:
-                raise ConfigError(f"Invalid input for the key: '{key}'")
-            new_key_dict[key.lower()] = converted_bool_value
-        elif key == "OUTPUT_FILE":
-            new_key_dict[key.lower()] = value
-        else:
-            raise ConfigError(f"Unknow argument in the config file: '{key}'")
-    return new_key_dict
+def int_convert(value: str, key_name: str) -> int:
+    try:
+        result = int(value)
+    except ValueError:
+        raise ConfigError(
+            f"Invalid type for the key '{key_name}': "
+            f"expected an integer, got '{value}'"
+        )
+    return result
+
+
+def coordinate_convert(value: str, key_name: str) -> tuple[int, int]:
+    coordinate = value.split(",")
+    if len(coordinate) != 2:
+        raise ConfigError(f"Invalid input for the '{key_name}'")
+    x, y = coordinate
+    result_x = int_convert(x, key_name)
+    result_y = int_convert(y, key_name)
+    return (result_x, result_y)
+
+
+def bool_convert(value: str, key_name: str) -> bool:
+    if value == "True":
+        result = True
+    elif value == "False":
+        result = False
+    else:
+        raise ConfigError(
+            f"Invalid value for the key '{key_name}': "
+            f"expected 'True' or 'False', got '{value}'"
+        )
+    return result
+
+
+def build_maze_config(key_dict: dict[str, str]) -> MazeConfig:
+    width = int_convert(key_dict["WIDTH"], "WIDTH")
+    if width <= 0:
+        raise ConfigError("Value for the key 'WIDTH' is <= 0")
+    height = int_convert(key_dict["HEIGHT"], "HEIGHT")
+    if height <= 0:
+        raise ConfigError("Value for the key 'HEIGHT' is <= 0")
+
+    entry = coordinate_convert(key_dict["ENTRY"], "ENTRY")
+    exit = coordinate_convert(key_dict["EXIT"], "EXIT")
+    perfect = bool_convert(key_dict["PERFECT"], "PERFECT")
+    output_file = key_dict["OUTPUT_FILE"]
+
+    config: MazeConfig = {
+        "width": width,
+        "height": height,
+        "entry": entry,
+        "exit": exit,
+        "output_file": output_file,
+        "perfect": perfect,
+    }  # seedは必須ではない＝ないかもしれないのでここには含めない
+
+    # ここでseedが存在するなら追加する処理を行う
+    # 後から追加しても型チェックに怒られないのはNotRequiredのおかげ
+    if "SEED" in key_dict:
+        config["seed"] = int_convert(key_dict["SEED"], "SEED")
+
+    return config
 
 
 # convertでは必須キーが含まれていない場合のエラーがチェックされない。ex) "WIDTH"がそもそもない場合、何もチェックされないで通る ので作った

@@ -27,23 +27,22 @@ def make_grid(maze: MazeGenerator) -> list[list[str]]:
     cols = len(maze.grid[0])
     new_grid = [
         [" " for _ in range(2 * cols + 1)] for _ in range(2 * rows + 1)
-    ]
-    ## fill space
+    ]  # fill space
 
+    # 交点（intersection）に　+　を置く
     for row in range(0, 2 * rows + 1, 2):
         for col in range(0, 2 * cols + 1, 2):
             new_grid[row][col] = "+"
-    ## 交点（intersection）に　+　を置く
 
+    # |と|の間に３スペースを置く
     for row in range(1, 2 * rows + 1, 2):
         for col in range(1, 2 * cols + 1, 2):
             new_grid[row][col] = "   "
-    #| と |の間に３スペースを置く
 
+    # + と +　の間に3スペースを置く
     for row in range(0, 2 * rows + 1, 2):
         for col in range(1, 2 * cols + 1, 2):
             new_grid[row][col] = "   "
-    # + と +　の間に3スペースを置く
 
     #  ↓ここまでで壁のない No_wall_gridが完成
     #   +   +   +   +
@@ -116,11 +115,11 @@ def change_wall_color(
 def show_solve(
     path: str, maze: MazeGenerator, grid: list[list[str]]
 ) -> list[list[str]]:
-    solve_grid: list[list[str]] = [] #show/hideで切り替えるために直接上書きせず、新しいgridをつくる
-    for row in grid:#gridの内容をコピーするためにループしてる
+    solve_grid: list[list[str]] = []  # show/hideで切り替えるために直接上書きせず、新しいgridをつくる
+    for row in grid:  # gridの内容をコピーするためにループしてる
         solve_grid.append(list(row))
     current_x, current_y = maze.entry
-    for direction in path: #"ESNWE..."から1文字を取り出す
+    for direction in path:  # "ESNWE..."から1文字を取り出す
         delta_y, delta_x = DIRECTION_DELTA[direction]
         next_x = current_x + delta_x
         next_y = current_y + delta_y

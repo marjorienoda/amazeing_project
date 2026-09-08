@@ -12,7 +12,7 @@ from generator import MazeGenerator
 from make_outputfile import make_output
 from read_config import (
     check_required_keys,
-    convert_keys,
+    build_maze_config,
     read_config,
     validate_entry_exit,
     ConfigError
@@ -30,7 +30,7 @@ def main() -> None:
     try:
         key_dict = read_config(sys.argv[1])
         check_required_keys(key_dict)
-        converted_keys = convert_keys(key_dict)
+        converted_keys = build_maze_config(key_dict)
         validate_entry_exit(
             converted_keys["width"],
             converted_keys["height"],
@@ -59,8 +59,8 @@ def main() -> None:
     color = None
     show_path = False
     color_index = 0
+    # 先頭にNoneを追加したcolor_dictのkeys(red, green, yellow, blue)のlistをcolor_listとする
     color_list = [None] + list(color_dict.keys())
-     #先頭にNoneを追加したcolor_dictのkeys(red, green, yellow, blue)のlistをcolor_listとする
 
     while True:
         print("=== A-Maze-ing ===")
@@ -77,13 +77,12 @@ def main() -> None:
             maze.generate()
             base_grid = build_display_grid(maze)
             make_output(maze)
-            # Mode1: Regenerate = maze.txt was changed → make_output is needed
         elif selected_mode == "2":
             show_path = not show_path  # 選ぶたびに逆転させる
         elif selected_mode == "3":
             color_index += 1
+            # None→Red→Green→Yellow→Blue→NoneとRotateする
             color = color_list[color_index % len(color_list)]
-             #None→Red→Green→Yellow→Blue→NoneとRotateする
         elif selected_mode == "4":
             print("=== System closed ===")
             break
