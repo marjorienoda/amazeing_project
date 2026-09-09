@@ -21,7 +21,6 @@ class MazeConfig(TypedDict):
     height: int
     entry: tuple[int, int]
     exit: tuple[int, int]
-    output_file: str
     perfect: bool
     seed: NotRequired[int]  # NotRequired　あってもなくてもいい扱いになる
 
@@ -86,7 +85,7 @@ def bool_convert(value: str, key_name: str) -> bool:
     return result
 
 
-def build_maze_config(key_dict: dict[str, str]) -> MazeConfig:
+def build_maze_config(key_dict: dict[str, str]) -> tuple[MazeConfig, str]:
     width = int_convert(key_dict["WIDTH"], "WIDTH")
     if width <= 0:
         raise ConfigError("Value for the key 'WIDTH' is <= 0")
@@ -104,7 +103,6 @@ def build_maze_config(key_dict: dict[str, str]) -> MazeConfig:
         "height": height,
         "entry": entry,
         "exit": exit,
-        "output_file": output_file,
         "perfect": perfect,
     }  # seedは必須ではない＝ないかもしれないのでここには含めない
 
@@ -113,7 +111,7 @@ def build_maze_config(key_dict: dict[str, str]) -> MazeConfig:
     if "SEED" in key_dict:
         config["seed"] = int_convert(key_dict["SEED"], "SEED")
 
-    return config
+    return config, output_file
 
 
 # convertでは必須キーが含まれていない場合のエラーがチェックされない。ex) "WIDTH"がそもそもない場合、何もチェックされないで通る ので作った

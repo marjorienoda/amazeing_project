@@ -17,7 +17,7 @@ def convert_hex(num: int) -> str:
     return hex(num).replace("0x", "")
 
 
-def make_output(maze: MazeGenerator) -> None:
+def make_output(maze: MazeGenerator, output_file: str) -> None:
     output = []
     for cells_list in maze.grid:
         row = []
@@ -32,7 +32,7 @@ def make_output(maze: MazeGenerator) -> None:
     data += f"{x},{y}       #exit   (x,y)\n"
     data += maze.solve() + "\n"
     try:
-        with open(maze.output_file, "w") as f:
+        with open(output_file, "w") as f:
             f.write(data)
     except OSError as e:
         print(f"{e}", file=sys.stderr)
