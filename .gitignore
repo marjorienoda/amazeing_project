@@ -1,2 +1,8 @@
-.mypy_cache/
+# Build artifacts
+dist/
+*.egg-info/
 __pycache__/
+.mypy_cache/
+
+# Virtual environments
+.venv
