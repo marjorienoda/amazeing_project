@@ -1,3 +1,11 @@
+"""Module for generating mazes and finding the shortest path through
+them.
+
+Provides the MazeGenerator and Cell classes. MazeGenerator generates
+a maze using the recursive backtracker algorithm and finds the
+shortest path from entry to exit via BFS.
+"""
+
 import random
 from collections import deque
 
