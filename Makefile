@@ -15,7 +15,6 @@ debug:
 	$(PYTHON) -m pdb $(SRC) $(CONFIG)
 
 
-
 install:
 	python3 -m venv .venv
 	$(PYTHON) -m pip install --upgrade pip
@@ -27,13 +26,13 @@ build:
 
 
 lint:
-	flake8 . --exclude=.venv
-	mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+	$(PYTHON) -m flake8 . --exclude=.venv
+	$(PYTHON) -m mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs --exclude=.venv
 
 
 lint-strict:
-	flake8 .
-	mypy --strict .
+	$(PYTHON) -m flake8 . --exclude=.venv
+	$(PYTHON) -m mypy . --strict --exclude=.venv
 
 
 clean:
