@@ -30,18 +30,18 @@ def main() -> None:
     try:
         key_dict = read_config(sys.argv[1])
         check_required_keys(key_dict)
-        converted_keys = build_maze_config(key_dict)
+        maze_config, output_file = build_maze_config(key_dict)
         validate_entry_exit(
-            converted_keys["width"],
-            converted_keys["height"],
-            converted_keys["entry"],
-            converted_keys["exit"]
+            maze_config["width"],
+            maze_config["height"],
+            maze_config["entry"],
+            maze_config["exit"]
         )
     except ConfigError as e:
         print(f"Config error: {e}", file=sys.stderr)
         sys.exit(1)
     try:
-        maze = MazeGenerator(**converted_keys)
+        maze = MazeGenerator(**maze_config)
     except TypeError as e:
         print(f"Missing or invalid key(s) in config.txt: {e}", file=sys.stderr)
         sys.exit(1)
@@ -54,7 +54,7 @@ def main() -> None:
     base_grid = build_display_grid(maze)
 
     render(base_grid)
-    make_output(maze)
+    make_output(maze, output_file)
     print()
     color = None
     show_path = False
@@ -76,7 +76,7 @@ def main() -> None:
             maze.seed = new_seed
             maze.generate()
             base_grid = build_display_grid(maze)
-            make_output(maze)
+            make_output(maze, output_file)
         elif selected_mode == "2":
             show_path = not show_path  # 選ぶたびに逆転させる
         elif selected_mode == "3":
