@@ -6,7 +6,7 @@ OPPOSITE = {
     "east": "west",
     "south": "north",
     "west": "east",
-}  # 変わらないものだから、定数として扱いたい
+}
 
 DIRECTION_LETTERS = {
     "north": "N",
@@ -28,7 +28,7 @@ class Cell:
             "west": True,
         }
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"x= {self.x}, y={self.y} "
 
 
@@ -178,7 +178,7 @@ class MazeGenerator:
             next_cell, chosen_direction = random.choice(list_directions)
             current_cell.walls[chosen_direction] = False
             next_cell.walls[OPPOSITE[chosen_direction]] = False
-    
+
     def get_reachable_cells(
         self, start_cell: Cell, restrict_to: set[tuple[int, int]] | None = None
     ) -> set[tuple[int, int]]:
@@ -186,13 +186,15 @@ class MazeGenerator:
         visited: set[tuple[int, int]] = {(start_cell.x, start_cell.y)}
         while queue:
             current_cell = queue.popleft()
-            for next_cell, _ in self.get_connected_neighbors(current_cell, visited):
+            for next_cell, _ in self.get_connected_neighbors(
+                current_cell, visited
+            ):
                 coord = (next_cell.x, next_cell.y)
                 if restrict_to is None or coord in restrict_to:
                     visited.add(coord)
                     queue.append(next_cell)
         return visited
-    
+
     def is_block_fully_connected(self, x: int, y: int) -> bool:
         block_cells: set[tuple[int, int]] = set()
         for row in range(y, y + 3):
@@ -202,26 +204,29 @@ class MazeGenerator:
         visited = self.get_reachable_cells(start_cell, restrict_to=block_cells)
         return len(block_cells) == len(visited)
 
-
     def check_maze_connected(self) -> bool:
         entry_x, entry_y = self.entry
         start_cell = self.grid[entry_y][entry_x]
         visited = self.get_reachable_cells(start_cell)
         return len(visited) == self.width * self.height
 
-    def find_extra_connections(self, row: int, col: int) -> list[tuple[Cell, Cell, str]]:
+    def find_extra_connections(
+            self, row: int, col: int
+    ) -> list[tuple[Cell, Cell, str]]:
         block_cells: set[tuple[int, int]] = set()
         candidates: list[tuple[Cell, Cell, str]] = []
         for r in range(row, row + 3):
             for c in range(col, col + 3):
                 block_cells.add((c, r))
-        
+
         for r in range(row, row + 3):
             for c in range(col, col + 3):
                 current_cell = self.grid[r][c]
                 valid_neighbors = self.get_valid_neighbors(current_cell)
                 for cell, direction in valid_neighbors:
-                    if current_cell.walls[direction] is False and (cell.x, cell.y) in block_cells:
+                    is_open = current_cell.walls[direction] is False
+                    is_in_block = (cell.x, cell.y) in block_cells
+                    if is_open and is_in_block:
                         candidates.append((current_cell, cell, direction))
         return candidates
 
@@ -229,10 +234,14 @@ class MazeGenerator:
         self, row: int, col: int, candidates: list[tuple[Cell, Cell, str]]
     ) -> None:
         while candidates:
-            cell_to_close, neighbor_cell, direction_to_close = random.choice(candidates)
+            cell_to_close, neighbor_cell, direction_to_close = random.choice(
+                candidates
+            )
             cell_to_close.walls[direction_to_close] = True
             neighbor_cell.walls[OPPOSITE[direction_to_close]] = True
-            candidates.remove((cell_to_close, neighbor_cell, direction_to_close))
+            candidates.remove(
+                (cell_to_close, neighbor_cell, direction_to_close)
+            )
 
             if not self.check_maze_connected():
                 cell_to_close.walls[direction_to_close] = False
@@ -278,8 +287,9 @@ class MazeGenerator:
             if neighbors:
                 next_cell, direction = random.choice(neighbors)
                 current_cell.walls[direction] = False
+                # 壁を壊す（２つのセル(current_cell , next_cell)の壁情報を変えないといけない
+                # どの方向を壊すか→direction　next_cellは反対の方向になるのでOPPOSITE[direction]
                 next_cell.walls[OPPOSITE[direction]] = False
-                # 壁を壊す（２つのセル(current_cell , next_cell)の壁情報を変えないといけない。どの方向を壊すか→direction　next_cellは反対の方向になるのでOPPOSITE[direction]
                 next_cell.visited = True
                 stack.append(next_cell)
             else:
@@ -291,10 +301,9 @@ class MazeGenerator:
                 self.braid(close_cell_list)
                 self.fix_large_open_areas()
 
-
     def solve(self) -> str:
         start_cell = self.grid[self.entry[1]][self.entry[0]]
-        queue = deque()
+        queue: deque[Cell] = deque()
         queue.append(start_cell)
         visited_bfs: set[tuple[int, int]] = set()
         visited_bfs.add((start_cell.x, start_cell.y))
