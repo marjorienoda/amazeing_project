@@ -1,6 +1,6 @@
 import sys
 
-from generator import MazeGenerator
+from mazegen import MazeGenerator
 
 WALL_BIT = {"north": 0, "east": 1, "south": 2, "west": 3}
 

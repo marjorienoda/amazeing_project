@@ -6,8 +6,9 @@ from display import (
     change_wall_color,
     render,
     show_solve,
+    color_dict
 )
-from generator import MazeGenerator
+from mazegen import MazeGenerator
 from make_outputfile import make_output
 from read_config import (
     check_required_keys,
@@ -53,9 +54,14 @@ def main() -> None:
     base_grid = build_display_grid(maze)
 
     render(base_grid)
+    make_output(maze)
     print()
     color = None
     show_path = False
+    color_index = 0
+    color_list = [None] + list(color_dict.keys())
+     #先頭にNoneを追加したcolor_dictのkeys(red, green, yellow, blue)のlistをcolor_listとする
+
     while True:
         print("=== A-Maze-ing ===")
         print("1. Re-generate a new maze")
@@ -70,10 +76,14 @@ def main() -> None:
             maze.seed = new_seed
             maze.generate()
             base_grid = build_display_grid(maze)
+            make_output(maze)
+            # Mode1: Regenerate = maze.txt was changed → make_output is needed
         elif selected_mode == "2":
             show_path = not show_path  # 選ぶたびに逆転させる
         elif selected_mode == "3":
-            color = input("Color: ")
+            color_index += 1
+            color = color_list[color_index % len(color_list)]
+             #None→Red→Green→Yellow→Blue→NoneとRotateする
         elif selected_mode == "4":
             print("=== System closed ===")
             break
@@ -90,7 +100,6 @@ def main() -> None:
         if show_path:
             display_grid = show_solve(maze.solve(), maze, display_grid)
         render(display_grid)
-        make_output(maze)
 
 
 if __name__ == "__main__":
