@@ -10,6 +10,73 @@
 ASCII形式で迷路を画面に表示します。ユーザーは迷路の再生成、最短経路の
 表示切り替え、壁の色変更などの操作をインタラクティブに行うことができます。
 
+## Program flow
+
+`a_maze_ing.py`を実行すると、以下の順序で処理が進みます。
+
+1. **`read_config.py`**：設定ファイル（`config.txt`など）を読み込み、構文を解析して各キーの値を適切な型（`int`, `bool`, 座標のタプルなど）に変換します。
+2. **`mazegen`（`MazeGenerator`）**：変換された設定をもとに迷路データを生成します。
+3. **`make_outputfile.py`**：生成された迷路データを、`OUTPUT_FILE`キーで指定されたファイルに書き出します。
+4. **`display.py`**：生成された迷路をASCII形式で画面に表示し、ユーザーからの操作（再生成、最短経路の表示切り替え、壁の色変更など）を受け付けます。
+
+### プログラム全体の関数呼び出しフロー
+
+```
+main() <a_maze_ing.py>
+├── read_config(config_file)                    # ファイルを読み込む
+│
+├── check_required_keys(key_dict)                # 必須キーの存在チェック
+│
+├── build_maze_config(key_dict)                  # 値の変換
+│   ├── int_convert(WIDTH)
+│   ├── int_convert(HEIGHT)
+│   ├── coordinate_convert(ENTRY)
+│   │   └── int_convert(x, y) x2
+│   ├── coordinate_convert(EXIT)
+│   │   └── int_convert(x, y) x2
+│   ├── bool_convert(PERFECT)
+│   └── int_convert(SEED)                        # SEEDが存在する場合のみ
+│
+├── validate_entry_exit(width, height, entry, exit)
+│
+├── MazeGenerator(**maze_config)                  # インスタンス化
+│
+├── maze.generate()                               # 迷路を生成する
+│   ├── build_grid()
+│   ├── calc_42patern()
+│   ├── close_cells(pattern_cells)
+│   ├── (DFSループ: get_unvisited_neighbors)
+│   ├── fix_large_open_areas()
+│   │   ├── is_block_fully_connected(x, y)
+│   │   ├── find_extra_connections(row, col)
+│   │   └── remove_extra_connections(row, col, candidates)
+│   └── braid(pattern_cells) x2                   # perfect=Falseの場合のみ
+│       └── fix_large_open_areas()                # 再実行
+│
+├── build_display_grid(maze)                      # 表示グリッドを作成
+│   ├── make_grid(maze)
+│   ├── add_start_goal(maze, grid)
+│   └── fill_42patern(maze, grid)
+│
+├── render(base_grid)                             # 初回表示
+│
+├── make_output(maze, output_file)                # 出力ファイルに書き出す
+│   ├── calc_wall_sum(walls_dict)
+│   └── convert_hex(num)
+│
+└── while True:                                    # メニューループ
+    ├── <1> 再生成: generate → build_display_grid → make_output
+    │
+    ├── <2> show_pathを反転
+    │   └──show_solve(maze.solve(), maze, grid)       # show_pathがTrueの場合のみ
+    │
+    ├── <3> colorを次の色にローテーション: red→green→yellow→blue→white(デフォルト)
+    │   └──change_wall_color(grid, color)             # colorが設定されている場合のみ
+    │
+    ├── render(display_grid)
+    └── <4> ループを終了
+```
+
 
 ## Instructions
 
@@ -132,6 +199,20 @@ ASCII形式で迷路を画面に表示します。ユーザーは迷路の再生
 条件に合う壁の中からランダムに選んだ壁を壊していく、という考え方が
 シンプルで分かりやすかったため、このアルゴリズムを採用しました。
 
+### 実装の詳細（`generate()`のフェーズ構成）
+
+`generate()`は大きく3つのフェーズに分かれています。
+
+**1：準備**
+`build_grid()`でグリッドを新規作成し、`calc_42patern()`で計算した
+「42」パターンのセルを`close_cells()`で閉じます。entry/exitがパターンと重なる場合はエラーとして扱います。
+
+**2:DFSによる迷路の掘削**
+entryセルを起点に、未訪問の隣接セルをランダムに選んで壁を壊しながら進み、行き止まりになったら1つ前のセルへ戻る（バックトラック）処理を繰り返します。
+
+**3：後処理**
+- `fix_large_open_areas()`で、3x3の開けすぎた領域（壁が無さすぎる箇所）を検出し、迷路全体の連結性を壊さない範囲で壁を追加して修正します。
+- `perfect=False`（Pac-Man用モード）の場合は、さらに`braid()`で行き止まりをランダムに1つ開放する処理と`fix_large_open_areas()`を2回繰り返し、行き止まりを減らします（完全に0にする保証はありません）。
 
 ## Reusable module
 

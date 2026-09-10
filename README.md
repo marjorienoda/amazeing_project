@@ -11,6 +11,78 @@ by the `OUTPUT_FILE` key, and the maze is displayed on screen in ASCII
 format. Users can interactively regenerate the maze, toggle the shortest
 path display, and change the wall colors.
 
+## Program flow
+When you run `a_maze_ing.py`, processing proceeds in the following
+order.
+
+1. **`read_config.py`**: Reads the configuration file (e.g.
+   `config.txt`), parses its syntax, and converts each key's value
+   into the appropriate type (`int`, `bool`, coordinate tuples, etc.).
+2. **`mazegen` (`MazeGenerator`)**: Generates the maze data based on
+   the converted configuration.
+3. **`make_outputfile.py`**: Writes the generated maze data to the
+   file specified by the `OUTPUT_FILE` key.
+4. **`display.py`**: Displays the generated maze on screen in ASCII
+   format and accepts user operations (regenerating the maze,
+   toggling the shortest path display, changing wall colors, etc.).
+
+### Overall function call flow
+```
+main() [a_maze_ing.py]
+├── read_config(config_file)                    # reads the file
+│
+├── check_required_keys(key_dict)                # checks required keys
+│
+├── build_maze_config(key_dict)                  # converts values
+│   ├── int_convert(WIDTH)
+│   ├── int_convert(HEIGHT)
+│   ├── coordinate_convert(ENTRY)
+│   │   └── int_convert(x, y) x2
+│   ├── coordinate_convert(EXIT)
+│   │   └── int_convert(x, y) x2
+│   ├── bool_convert(PERFECT)
+│   └── int_convert(SEED)                        # only if SEED is present
+│
+├── validate_entry_exit(width, height, entry, exit)
+│
+├── MazeGenerator(**maze_config)                  # instantiation
+│
+├── maze.generate()                               # generates the maze
+│   ├── build_grid()
+│   ├── calc_42patern()
+│   ├── close_cells(pattern_cells)
+│   ├── (DFS loop: get_unvisited_neighbors)
+│   ├── fix_large_open_areas()
+│   │   ├── is_block_fully_connected(x, y)
+│   │   ├── find_extra_connections(row, col)
+│   │   └── remove_extra_connections(row, col, candidates)
+│   └── braid(pattern_cells) x2                   # only if perfect=False
+│       └── fix_large_open_areas()                # run again
+│
+├── build_display_grid(maze)                      # builds the display grid
+│   ├── make_grid(maze)
+│   ├── add_start_goal(maze, grid)
+│   └── fill_42patern(maze, grid)
+│
+├── render(base_grid)                             # initial display
+│
+├── make_output(maze, output_file)                # writes the output file
+│   ├── calc_wall_sum(walls_dict)
+│   └── convert_hex(num)
+│
+└── while True:                                    # menu loop
+    ├── <1> regenerate: generate → build_display_grid → make_output
+    │
+    ├── <2> toggle show_path
+    │   └── show_solve(maze.solve(), maze, grid)       # only if show_path
+    │
+    ├── <3> rotate color: red→green→yellow→blue→white(default)
+    │   └──change_wall_color(grid, color)             # only if color is set
+    │
+    ├── render(display_grid)
+    └── <4> exit loop
+```
+
 
 ## Instructions
 
@@ -141,6 +213,29 @@ path exists between any two cells.
 We chose this algorithm because the idea of repeatedly breaking a
 randomly chosen wall among the eligible candidates was simple and easy
 to understand.
+
+### Implementation details (phases of `generate()`)
+
+`generate()` is broadly divided into three phases.
+
+**1: Preparation**
+Creates a new grid with `build_grid()`, then closes the "42" pattern
+cells computed by `calc_42patern()` using `close_cells()`. If entry or
+exit overlaps the pattern, it's treated as an error.
+
+**2: Carving the maze with DFS**
+Starting from the entry cell, it repeatedly picks a random unvisited
+neighboring cell, breaks the wall to it, and moves in; when it reaches
+a dead end, it backtracks to the previous cell.
+
+**3: Post-processing**
+- `fix_large_open_areas()` detects over-open 3x3 areas (regions with
+  too few walls) and fixes them by adding walls, without breaking the
+  maze's overall connectivity.
+- If `perfect=False` (Pac-Man mode), it additionally alternates
+  `braid()` — which randomly opens one wall per dead end — with
+  `fix_large_open_areas()` twice, to reduce dead ends (not guaranteed
+  to eliminate them entirely).
 
 
 ## Reusable module
