@@ -315,11 +315,13 @@ as a shared notes for task management and progress tracking.
 - Every time something was implemented, we could get the other
   person's confirmation (each of us could review the other's work).
 - Splitting tasks clearly meant there was no duplicated work.
+- We were able to communicate without any problems
 
 **What could be improved**
-- (to be filled in)
+- Since new features became necessary later on and some aspects of usage changed, We think the initial design could have been more solid.
+- It would be great if we could implement more additional features. example: maze display animation, use MiniLibX (MLX) library.
 
 ### Tools used
-- GitHub (code review and merging via Pull Requests)
+- GitHub[https://github.com/marjorienoda/amazeing_project] (code review and merging via Pull Requests)
 - Discord (communication)
 - Google Document (task management and shared notes)
