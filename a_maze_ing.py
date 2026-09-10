@@ -1,3 +1,15 @@
+"""A-Maze-ing — CLI entry point.
+
+Reads a config file passed as a command-line argument, generates a
+maze accordingly, displays it in the terminal, writes it to the
+configured output file, and offers an interactive menu to
+regenerate the maze, show/hide the solution path, and rotate wall
+colours.
+
+Usage:
+    python3 a_maze_ing.py <config_file>
+"""
+
 import random
 import sys
 
@@ -20,6 +32,22 @@ from read_config import (
 
 
 def main() -> None:
+    """Run the A-Maze-ing CLI.
+
+    Parses and validates the config file given as the first
+    command-line argument, generates the maze, writes the output
+    file, and enters an interactive loop letting the user regenerate
+    the maze, toggle the solution path, and rotate wall colours until
+    they choose to quit.
+
+    Exits the program with status 1 (after printing a clear error
+    message to stderr) if:
+        - no config file argument is given;
+        - the config file is missing, malformed, or fails validation;
+        - `MazeGenerator` cannot be instantiated from the parsed config;
+        - maze generation fails (e.g. entry/exit overlapping the "42"
+          pattern).
+    """
     if len(sys.argv) < 2:
         print(
             "Error: missing config file argument. "
