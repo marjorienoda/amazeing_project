@@ -8,6 +8,7 @@ shortest path from entry to exit via BFS.
 
 import random
 from collections import deque
+import sys
 
 OPPOSITE = {
     "north": "south",
@@ -215,10 +216,11 @@ class MazeGenerator:
                             (start_y + y_index, start_x + x_index)
                         )
         else:
-            raise ValueError(
+            print(
                 f"42 pattern requires width >= {patern_width + 2},"
-                f" and height >= {patern_height + 2}."
+                f" and height >= {patern_height + 2}. "
                 f"Current: width={self.width}, height={self.height}",
+                file=sys.stderr
             )
         return close_cells
 
