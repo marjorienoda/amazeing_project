@@ -3,8 +3,7 @@
 ## Description
 This project's goal is to build `a_maze_ing.py`, a program that reads
 settings from a `config.txt` file and generates a maze embedded with
-a "42" pattern (supporting two modes: a perfect maze and a non-perfect,
-Pac-Man-style maze).
+a "42" pattern (supporting two modes: a perfect maze and a non-perfect maze).
 
 After generation, the maze data is written to the output file specified
 by the `OUTPUT_FILE` key, and the maze is displayed on screen in ASCII
