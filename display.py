@@ -19,13 +19,13 @@ color_dict: dict[str, str] = {
 
 def build_display_grid(maze: MazeGenerator) -> list[list[str]]:
     """Build the full ASCII display grid for a maze.
- 
+
     Combines the base wall grid with the entry/exit markers and the
     "42" pattern highlight, ready to be rendered.
- 
+
     Args:
         maze: The generated maze to render.
- 
+
     Returns:
         A 2D list of strings representing the maze, one cell of the
         list per character position on screen.
@@ -37,15 +37,15 @@ def build_display_grid(maze: MazeGenerator) -> list[list[str]]:
 
 def to_grid_coord(x: int, y: int) -> tuple[int, int]:
     """Convert maze cell coordinates to ASCII display grid coordinates.
- 
+
     Each maze cell occupies a 2x2 area in the display grid (to make
     room for walls between cells), so cell (x, y) maps to the display
     position (2y + 1, 2x + 1).
- 
+
     Args:
         x: Column index of the cell in the maze.
         y: Row index of the cell in the maze.
- 
+
     Returns:
         A tuple (grid_y, grid_x) with the corresponding position in
         the display grid.
@@ -65,7 +65,7 @@ def make_grid(maze: MazeGenerator) -> list[list[str]]:
 
     Args:
         maze: the generated maze to draw.
-    
+
     Returns:
         A 2D list of strings representing the maze walls, with no
         entry/exit markers or pattern highlighting applied yet.
@@ -126,7 +126,7 @@ def add_start_goal(
         maze: The generated maze, used to read `entry` and
         `exit` coordinates.
         grid: The ASCII display grid to mark.
-    
+
     Returns:
         The same grid, with " S " written at the entry cell
         and " G " written at the exit cell.
@@ -214,7 +214,7 @@ def show_solve(
         grid: The ASCII display grid to draw the path on. This grid is
             not modified in place; a copy is returned instead, so the
             path can be shown/hidden without affecting the base grid.
-    
+
     Returns:
         A new grid with the solution path highlighted in cyan.
     """
