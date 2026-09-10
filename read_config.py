@@ -97,6 +97,11 @@ def build_maze_config(key_dict: dict[str, str]) -> tuple[MazeConfig, str]:
     exit = coordinate_convert(key_dict["EXIT"], "EXIT")
     perfect = bool_convert(key_dict["PERFECT"], "PERFECT")
     output_file = key_dict["OUTPUT_FILE"]
+    if not output_file:
+        raise ConfigError(
+            f"Invalid value for the key 'OUTPUT_FILE': "
+            f"expected a non-empty filename, got '{output_file}'"
+        )
 
     config: MazeConfig = {
         "width": width,
