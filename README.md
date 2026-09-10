@@ -140,7 +140,7 @@ We referred to the following resources.
 - [How to package a project](https://packaging.python.org/ja/latest/tutorials/packaging-projects/)
 - [About pyproject.toml](https://packaging.python.org/ja/latest/guides/writing-pyproject-toml/)
 - [About pyproject.toml (part 2)](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license)
-- [Licensing a repository](https://docs.github.com/ja/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository)
+- [License MIT](https://license.md/licenses/mit-license/)
 
 ### How AI was used
 Model used: [Claude](claude.ai)
@@ -149,6 +149,7 @@ We used AI for the following tasks:
 - Generating illustrative diagrams
     Used to organize information while working on `display.py`, and to
     understand `fix_large_open_areas()`.
+- Explaining the recursive backtracker algorithm.
 - Analyzing errors and proposing improvements
     Example: when mypy flagged an error in `convert_keys` (now
     `build_maze_config`), we had it suggest a design fix.
@@ -244,6 +245,12 @@ inside the `generator.py` module of the `mazegen` package, and can be
 reused independently in other projects.
 It is built as an installable pip package named `mazegen-*` (see
 `make build`; for detailed usage, also see `mazegen/README.md`).
+
+### Installation
+
+```bash
+pip install mazegen-1.0.0-py3-none-any.whl
+```
 
 ### Basic usage
 

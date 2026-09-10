@@ -222,6 +222,11 @@ entryセルを起点に、未訪問の隣接セルをランダムに選んで壁
 pipでインストール可能な `mazegen-*` パッケージとしてビルドされています
 （`make build` を参照。詳細な使用方法は `mazegen/README.md` も参照）。
 
+### インストール
+```bash
+pip install mazegen-1.0.0-py3-none-any.whl
+```
+
 ### 基本的な使い方
 
 ```python
