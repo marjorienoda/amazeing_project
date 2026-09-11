@@ -74,9 +74,9 @@ def make_output(maze: MazeGenerator, output_file: str) -> None:
         output.append("".join(row))
     data = "".join(output) + "\n"
     x, y = maze.entry
-    data += f"{x},{y}       #entry  (x,y)\n"
+    data += f"{x},{y}\n"
     x, y = maze.exit
-    data += f"{x},{y}       #exit   (x,y)\n"
+    data += f"{x},{y}\n"
     data += maze.solve() + "\n"
     try:
         with open(output_file, "w") as f:
