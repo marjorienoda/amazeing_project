@@ -163,7 +163,7 @@ def fill_42pattern(
 
 def change_wall_color(
     grid: list[list[str]], color: str
-) -> list[list[str]] | None:
+) -> list[list[str]]:
     """Recolor the maze walls in the given ASCII grid.
 
     Only characters that represent walls ("-", "+", "|") are recolored;
@@ -178,12 +178,7 @@ def change_wall_color(
         A new grid with wall characters wrapped in ANSI color codes,
         or None if `color` is not a recognised color name.
     """
-    try:
-        color_code = color_dict[color]
-    except KeyError as e:
-        print(f"That color is not available. : {e}")
-        return None
-
+    color_code = color_dict[color]
     colored_grid = []
     for i in grid:
         colored_row = []
