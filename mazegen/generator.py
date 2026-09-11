@@ -482,6 +482,49 @@ class MazeGenerator:
                     candidates = self.find_extra_connections(row, col)
                     self.remove_extra_connections(row, col, candidates)
 
+    def count_independent_loops(
+        self, pattern_cells: list[tuple[int, int]]
+    ) -> int:
+        """Count independent loops in the maze graph, excluding '42'
+        pattern cells.
+
+        Uses the formula: loops = edges - vertices + 1, applied only to
+        the connected component of non-pattern cells. This works because
+        the maze (excluding pattern cells) is guaranteed to be fully
+        connected.
+
+        Args:
+            pattern_cells (list[tuple[int, int]]): (y, x) coordinates of
+                cells excluded from the graph (typically the "42" pattern).
+
+        Returns:
+            int: The number of independent loops (0 for a perfect maze).
+        """
+        pattern_set = set(pattern_cells)
+        normal_cells = 0
+        open_edges = 0
+        for h in range(self.height):
+            for w in range(self.width):
+                if (h, w) in pattern_set:
+                    continue
+                normal_cells += 1
+                cell = self.grid[h][w]
+                if (
+                    cell.walls["east"] is False
+                    and w + 1 < self.width
+                    and (h, w + 1) not in pattern_set
+                ):
+                    open_edges += 1
+                if (
+                    cell.walls["south"] is False
+                    and h + 1 < self.height
+                    and (h + 1, w) not in pattern_set
+                ):
+                    open_edges += 1
+        if normal_cells == 0:
+            return 0
+        return open_edges - normal_cells + 1
+
     def generate(self) -> None:
         """Generate the maze using the recursive backtracker algorithm.
 
@@ -545,10 +588,28 @@ class MazeGenerator:
 
         self.fix_large_open_areas()
         if self.perfect is False:
-            for _ in range(2):  # 2回も繰り返せば、大抵の行き止まりは十分減るので2にした
-                self.braid(close_cell_list)  # 行き止まり解消→壁を壊すので3x3ができるかも
-                self.fix_large_open_areas()  # 出来てしまった3x3を潰す
+            max_attempts = 30  # 無限ループ防止用に設定した上限
+            for _ in range(max_attempts):
+                self.braid(close_cell_list)
+                self.fix_large_open_areas()
+                if len(self.get_dead_ends()) <= 2:
+                    break
+            else:  # 上限まで回しても行き止まりが減りきらなかった場合
+                print(
+                    "Could not reduce dead-ends enough "
+                    "within the size/shape constraints.",
+                    file=sys.stderr
+                )
 
+            # 保険: 行き止まりを潰した副作用でループは2以上になるはずだが、
+            # 小さい迷路など稀なケースのため最後に一度だけ確認する
+            if self.count_independent_loops(close_cell_list) < 2:
+                print(
+                    "Could not guarantee 2 independent loops "
+                    "within the size/shape constraints.",
+                    file=sys.stderr
+                )
+        else:
             # normal_cells = 全セルから42パターンを除いたセル数
             normal_cells = (self.width * self.height) - len(close_cell_list)
             open_edge_count = 0  # 開いている通路（エッジ）の数。これから下のループで数える
