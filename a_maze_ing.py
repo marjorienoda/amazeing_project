@@ -99,7 +99,7 @@ def main() -> None:
         try:
             selected_mode = input("Choice? (1-4): ")
         except (EOFError, KeyboardInterrupt):
-            print(f"Interrupted by the user", file=sys.stderr)
+            print("Interrupted by the user", file=sys.stderr)
             sys.exit(1)
         if selected_mode == "1":
             new_seed = random.randint(0, 100)
