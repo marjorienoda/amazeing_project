@@ -48,7 +48,7 @@ main() [a_maze_ing.py]
 │
 ├── maze.generate()                               # generates the maze
 │   ├── build_grid()
-│   ├── calc_42patern()
+│   ├── calc_42pattern()
 │   ├── close_cells(pattern_cells)
 │   ├── (DFS loop: get_unvisited_neighbors)
 │   ├── fix_large_open_areas()
@@ -61,7 +61,7 @@ main() [a_maze_ing.py]
 ├── build_display_grid(maze)                      # builds the display grid
 │   ├── make_grid(maze)
 │   ├── add_start_goal(maze, grid)
-│   └── fill_42patern(maze, grid)
+│   └── fill_42pattern(maze, grid)
 │
 ├── render(base_grid)                             # initial display
 │
@@ -220,7 +220,7 @@ to understand.
 
 **1: Preparation**
 Creates a new grid with `build_grid()`, then closes the "42" pattern
-cells computed by `calc_42patern()` using `close_cells()`. If entry or
+cells computed by `calc_42pattern()` using `close_cells()`. If entry or
 exit overlaps the pattern, it's treated as an error.
 
 **2: Carving the maze with DFS**
@@ -296,7 +296,7 @@ maze = MazeGenerator(
 
 | File | Owner |
 |---------|------|
-| `mazegen/generator.py` | mnoda-ta (except the `calc_42patern` function, by rkato) |
+| `mazegen/generator.py` | mnoda-ta (except the `calc_42pattern` function, by rkato) |
 | `read_config.py` | rkato |
 | `make_outputfile.py` | rkato |
 | `display.py` | rkato |

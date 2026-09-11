@@ -1,7 +1,7 @@
 """ASCII rendering of the maze for the terminal display.
 
 Builds a text grid representation of a maze, marks entry
-and exit, highlights the "42" pattern, applies wall colours,
+and exit, highlights the "42" pattern, applies wall colors,
 and draws the solution path when requested.
 """
 
@@ -31,7 +31,7 @@ def build_display_grid(maze: MazeGenerator) -> list[list[str]]:
         list per character position on screen.
     """
     ascii_grid = make_grid(maze)
-    base_grid = fill_42patern(maze, add_start_goal(maze, ascii_grid))
+    base_grid = fill_42pattern(maze, add_start_goal(maze, ascii_grid))
     return base_grid
 
 
@@ -138,7 +138,7 @@ def add_start_goal(
     return grid
 
 
-def fill_42patern(
+def fill_42pattern(
     maze: MazeGenerator, grid: list[list[str]]
 ) -> list[list[str]]:
     """Highlight the "42" pattern cells on the display grid.
@@ -164,19 +164,19 @@ def fill_42patern(
 def change_wall_color(
     grid: list[list[str]], color: str
 ) -> list[list[str]] | None:
-    """Recolour the maze walls in the given ASCII grid.
+    """Recolor the maze walls in the given ASCII grid.
 
-    Only characters that represent walls ("-", "+", "|") are recoloured;
+    Only characters that represent walls ("-", "+", "|") are recolored;
     empty space, markers, and the "42" pattern are left untouched.
 
     Args:
-        grid: The ASCII display grid to recolour.
+        grid: The ASCII display grid to recolor.
         color: The color name to apply. Must be one of the keys in
             `color_dict`.
 
     Returns:
-        A new grid with wall characters wrapped in ANSI colour codes,
-        or None if `color` is not a recognised colour name.
+        A new grid with wall characters wrapped in ANSI color codes,
+        or None if `color` is not a recognised color name.
     """
     try:
         color_code = color_dict[color]

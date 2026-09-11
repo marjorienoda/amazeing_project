@@ -4,7 +4,7 @@ Reads a config file passed as a command-line argument, generates a
 maze accordingly, displays it in the terminal, writes it to the
 configured output file, and offers an interactive menu to
 regenerate the maze, show/hide the solution path, and rotate wall
-colours.
+colors.
 
 Usage:
     python3 a_maze_ing.py <config_file>
@@ -37,7 +37,7 @@ def main() -> None:
     Parses and validates the config file given as the first
     command-line argument, generates the maze, writes the output
     file, and enters an interactive loop letting the user regenerate
-    the maze, toggle the solution path, and rotate wall colours until
+    the maze, toggle the solution path, and rotate wall colors until
     they choose to quit.
 
     Exits the program with status 1 (after printing a clear error
@@ -94,7 +94,7 @@ def main() -> None:
         print("=== A-Maze-ing ===")
         print("1. Re-generate a new maze")
         print("2. Show / Hide the shortest path")
-        print("3. Rotate the wall colours")
+        print("3. Rotate the wall colors")
         print("4. Quit")
         selected_mode = input("Choice? (1-4): ")
         if selected_mode == "1":
