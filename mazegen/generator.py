@@ -485,10 +485,12 @@ class MazeGenerator:
             2. Carve the maze from entry via DFS (depth-first search),
                breaking walls into unvisited neighbors and backtracking
                at dead ends.
-            3. Fix over-open 3x3 areas via fix_large_open_areas. If
-               perfect is False, additionally alternates braid and
+            3. Fix over-open 3x3 areas via fix_large_open_areas.
+               If perfect is False, additionally alternates braid and
                fix_large_open_areas twice to reduce dead ends (not
-               guaranteed to eliminate them entirely).
+               guaranteed to eliminate them entirely). If the maze is
+               too small or narrow for any loop to be added even after
+               this, a warning is printed to stderr and generation continues.
 
         Raises:
             ValueError: If the entry or exit coordinates overlap the
@@ -540,6 +542,24 @@ class MazeGenerator:
             for _ in range(2):  # 2回も繰り返せば、大抵の行き止まりは十分減るので2にした
                 self.braid(close_cell_list)  # 行き止まり解消→壁を壊すので3x3ができるかも
                 self.fix_large_open_areas()  # 出来てしまった3x3を潰す
+
+            # normal_cells = 全セルから42パターンを除いたセル数
+            normal_cells = (self.width * self.height) - len(close_cell_list)
+            open_edge_count = 0  # 開いている通路（エッジ）の数。これから下のループで数える
+            for h in range(self.height):
+                for w in range(self.width):  # この二重ループで全Cellを順に見ている
+                    cell = self.grid[h][w]  # cell = 今見ているCell
+
+                    # 東南に加えて西北もカウントすれば、隣のセルの東南と二重カウントになるのでしない
+                    # もちろん東北を西南にしても問題ない
+                    if cell.walls["east"] is False:  # 東に通路があるなら
+                        open_edge_count += 1  # カウントを増やす
+                    if cell.walls["south"] is False:  # 同じく南もチェック
+                        open_edge_count += 1
+
+            # 通路の数がセル数-1と一致 = ループが1つもない = 完全迷路のまま
+            if open_edge_count == (normal_cells - 1):
+                print("Can not make non-perfect maze.", file=sys.stderr)
 
     def solve(self) -> str:
         """Find the shortest path from entry to exit via BFS and
