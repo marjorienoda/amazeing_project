@@ -191,12 +191,13 @@ class MazeGenerator:
         """Calculate the coordinates of cells forming the "42" pattern
         at the center of the maze.
 
-        Raises:
-            ValueError: If the maze is too small to fit the "42" pattern.
+        If the maze is too small to fit the pattern, prints a warning
+        to stderr and returns an empty list instead of raising an error.
 
         Returns:
             list[tuple[int, int]]: A list of (y, x) coordinates for the
-                cells that make up the "42" pattern.
+                cells that make up the "42" pattern. Empty if the maze
+                is too small to fit the pattern.
         """
         patern_height = 5
         patern_width = 7
