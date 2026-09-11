@@ -187,7 +187,7 @@ class MazeGenerator:
                 connected_neighbors.append((cell, direction))
         return connected_neighbors
 
-    def calc_42patern(self) -> list[tuple[int, int]]:
+    def calc_42pattern(self) -> list[tuple[int, int]]:
         """Calculate the coordinates of cells forming the "42" pattern
         at the center of the maze.
 
@@ -199,18 +199,21 @@ class MazeGenerator:
                 cells that make up the "42" pattern. Empty if the maze
                 is too small to fit the pattern.
         """
-        patern_height = 5
-        patern_width = 7
-        patern_42 = ["1000111", "1000001", "1110111", "0010100", "0010111"]
+        pattern_height = 5
+        pattern_width = 7
+        pattern_42 = ["1000111", "1000001", "1110111", "0010100", "0010111"]
         center_y, center_x = (
             self.height // 2,
             self.width // 2,
         )  # //にすれば、整数だけになる（小数切り捨て)
         close_cells: list[tuple[int, int]] = []
-        if self.width >= patern_width + 2 and self.height >= patern_height + 2:
-            start_y = center_y - (patern_height // 2)
-            start_x = center_x - (patern_width // 2)
-            for y_index, row in enumerate(patern_42):
+        if (
+            self.width >= pattern_width + 2
+            and self.height >= pattern_height + 2
+        ):
+            start_y = center_y - (pattern_height // 2)
+            start_x = center_x - (pattern_width // 2)
+            for y_index, row in enumerate(pattern_42):
                 for x_index, bit in enumerate(row):
                     if bit == "1":
                         close_cells.append(
@@ -218,8 +221,8 @@ class MazeGenerator:
                         )
         else:
             print(
-                f"42 pattern requires width >= {patern_width + 2},"
-                f" and height >= {patern_height + 2}. "
+                f"42 pattern requires width >= {pattern_width + 2},"
+                f" and height >= {pattern_height + 2}. "
                 f"Current: width={self.width}, height={self.height}",
                 file=sys.stderr
             )
@@ -229,7 +232,7 @@ class MazeGenerator:
         """Close all walls of the given cells and mark them visited.
 
         Used to exclude the "42" pattern cells (computed by
-        calc_42patern) from the maze generation traversal. Closes both
+        calc_42pattern) from the maze generation traversal. Closes both
         the target cell's own walls and the corresponding walls on its
         neighbors.
 
@@ -377,8 +380,10 @@ class MazeGenerator:
         entry_x, entry_y = self.entry
         start_cell = self.grid[entry_y][entry_x]
         visited = self.get_reachable_cells(start_cell)
+        pattern_cells = len(self.calc_42pattern())
+        expected = self.width * self.height - pattern_cells
         # 到達可能なセルと、迷路全体のセル数(width * height)が等しいか
-        return len(visited) == self.width * self.height
+        return len(visited) == expected
 
     def find_extra_connections(
             self, row: int, col: int
@@ -498,7 +503,7 @@ class MazeGenerator:
                 "42" pattern.
         """
         self.grid = self.build_grid()  # gridを新規作成
-        close_cell_list = self.calc_42patern()  # 42patern座標を計算
+        close_cell_list = self.calc_42pattern()  # 42pattern座標を計算
 
         # self.entry/self.exit は (x, y) 順だが、close_cell_list は (y, x) 順
         # （self.grid[y][x] でアクセスするため）なので、↓のifで比較する前に順序を揃える

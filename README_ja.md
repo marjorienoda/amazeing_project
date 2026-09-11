@@ -43,7 +43,7 @@ main() <a_maze_ing.py>
 │
 ├── maze.generate()                               # 迷路を生成する
 │   ├── build_grid()
-│   ├── calc_42patern()
+│   ├── calc_42pattern()
 │   ├── close_cells(pattern_cells)
 │   ├── (DFSループ: get_unvisited_neighbors)
 │   ├── fix_large_open_areas()
@@ -56,7 +56,7 @@ main() <a_maze_ing.py>
 ├── build_display_grid(maze)                      # 表示グリッドを作成
 │   ├── make_grid(maze)
 │   ├── add_start_goal(maze, grid)
-│   └── fill_42patern(maze, grid)
+│   └── fill_42pattern(maze, grid)
 │
 ├── render(base_grid)                             # 初回表示
 │
@@ -204,7 +204,7 @@ main() <a_maze_ing.py>
 `generate()`は大きく3つのフェーズに分かれています。
 
 **1：準備**
-`build_grid()`でグリッドを新規作成し、`calc_42patern()`で計算した
+`build_grid()`でグリッドを新規作成し、`calc_42pattern()`で計算した
 「42」パターンのセルを`close_cells()`で閉じます。entry/exitがパターンと重なる場合はエラーとして扱います。
 
 **2:DFSによる迷路の掘削**
@@ -271,7 +271,7 @@ maze = MazeGenerator(
 
 | ファイル | 担当 |
 |---------|------|
-| `mazegen/generator.py` | mnoda-ta （ただし`calc_42patern`関数はrkato）|
+| `mazegen/generator.py` | mnoda-ta （ただし`calc_42pattern`関数はrkato）|
 | `read_config.py` | rkato |
 | `make_outputfile.py` | rkato |
 | `display.py` | rkato |
