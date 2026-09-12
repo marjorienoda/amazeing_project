@@ -341,7 +341,7 @@ class MazeGenerator:
                     queue.append(next_cell)  # 行列の末尾に新しく追加する
         return visited
 
-    def is_block_fully_connected(self, x: int, y: int) -> bool:
+    def is_block_fully_connected(self, row: int, col: int) -> bool:
         """Check whether every cell in a 3x3 block is reachable from
         every other cell through open walls.
 
@@ -349,24 +349,24 @@ class MazeGenerator:
         to this 3x3 block, and checks whether all 9 cells are reached.
 
         Args:
-            x (int): The x-coordinate of the block's top-left corner.
-            y (int): The y-coordinate of the block's top-left corner.
+            row (int): The y-coordinate of the block's top-left corner.
+            col (int): The x-coordinate of the block's top-left corner.
 
         Returns:
             bool: True if all 9 cells in the block are reachable,
                 False if only some of them are.
         """
         block_cells: set[tuple[int, int]] = set()
-        for row in range(y, y + 3):
-            for col in range(x, x + 3):
-                block_cells.add((col, row))
-        start_cell = self.grid[y][x]
+        for r in range(row, row + 3):
+            for c in range(col, col + 3):
+                block_cells.add((c, r))
+        start_cell = self.grid[row][col]
 
         # 左上のセルから、この3x3のブロック内だけでBFSして、到達可能な座標を求める
         visited = self.get_reachable_cells(start_cell, restrict_to=block_cells)
         return len(block_cells) == len(visited)
 
-    def check_maze_connected(self) -> bool:
+    def check_maze_connected(self, close_cell_nb: int) -> bool:
         """Check whether every cell in the maze is reachable from entry.
 
         Uses get_reachable_cells starting from the entry cell, and
@@ -380,13 +380,11 @@ class MazeGenerator:
         entry_x, entry_y = self.entry
         start_cell = self.grid[entry_y][entry_x]
         visited = self.get_reachable_cells(start_cell)
-        pattern_cells = len(self.calc_42pattern())
-        expected = self.width * self.height - pattern_cells
-        # 到達可能なセルと、迷路全体のセル数(width * height)が等しいか
-        return len(visited) == expected
+        #到達可能なセルと、迷路全体のセル数(width * height)が等しいか
+        return len(visited) == (self.width * self.height) - close_cell_nb
 
     def find_extra_connections(
-            self, row: int, col: int
+        self, row: int, col: int
     ) -> list[tuple[Cell, Cell, str]]:
         """Find all open (unwalled) connections within a 3x3 block.
 
@@ -422,7 +420,11 @@ class MazeGenerator:
         return candidates
 
     def remove_extra_connections(
-        self, row: int, col: int, candidates: list[tuple[Cell, Cell, str]]
+        self,
+        row: int,
+        col: int,
+        candidates: list[tuple[Cell, Cell, str]],
+        close_cell_nb: int
     ) -> None:
         """Close walls to break up an over-connected 3x3 block.
 
@@ -453,18 +455,18 @@ class MazeGenerator:
 
             # 壁を閉じてみたが、その結果行けないセルが出来た
             # 壁を閉じて元に戻し、次の候補へ
-            if not self.check_maze_connected():
+            if not self.check_maze_connected(close_cell_nb):
                 cell_to_close.walls[direction_to_close] = False
                 neighbor_cell.walls[OPPOSITE[direction_to_close]] = False
                 continue
 
             # 壁を閉じた結果、3x3ブロックがもう全部つながっている状態ではなくなった
             # 目的達成なのでループを抜ける
-            if not self.is_block_fully_connected(col, row):
+            if not self.is_block_fully_connected(row, col):
                 break
 
     def fix_large_open_areas(
-        self,
+        self, close_cell_nb: int
     ) -> None:
         """Scan every 3x3 block in the grid and fix over-open areas by
         adding walls.
@@ -478,9 +480,53 @@ class MazeGenerator:
         for row in range(self.height - 2):  # 3x3ブロックの左上として使えるrowの上限
             for col in range(self.width - 2):
                 # その3x3ブロックが「全部繋がっている」＝壁が無さすぎる（3x3の開けた空間ができている）かをチェック
-                if self.is_block_fully_connected(col, row):
+                if self.is_block_fully_connected(row, col):
                     candidates = self.find_extra_connections(row, col)
-                    self.remove_extra_connections(row, col, candidates)
+                    self.remove_extra_connections(row, col, candidates, close_cell_nb)
+
+    def count_independent_loops(
+            self, pattern_cells: list[tuple[int, int]]
+    ) -> int:
+        """Count independent loops in the maze graph, excluding '42'
+        pattern cells.
+
+        Uses the formula: loops = edges - vertices + 1, applied only to
+        the connected component of non-pattern cells. This works because
+        the maze (excluding pattern cells) is guaranteed to be fully
+        connected.
+
+        Args:
+            pattern_cells (list[tuple[int, int]]): (y, x) coordinates of
+                cells excluded from the graph (typically the "42" pattern).
+
+        Returns:
+            int: The number of independent loops (0 for a perfect maze).
+        """
+        pattern_set = set(pattern_cells)
+        normal_cells = 0
+        open_edges = 0
+        for h in range(self.height):
+            for w in range(self.width):
+                if (h, w) in pattern_set:
+                    continue
+                normal_cells += 1
+                cell = self.grid[h][w]
+                if (
+                    cell.walls["east"] is False
+                    and w + 1 < self.width
+                    and (h, w + 1) not in pattern_set
+                ):
+                    open_edges += 1
+                if (
+                    cell.walls["south"] is False
+                    and h + 1 < self.height
+                    and (h + 1, w) not in pattern_set
+                ):
+                    open_edges += 1
+        if normal_cells == 0:
+            return 0
+        return open_edges - normal_cells + 1
+
 
     def generate(self) -> None:
         """Generate the maze using the recursive backtracker algorithm.
@@ -542,13 +588,31 @@ class MazeGenerator:
                 stack.append(next_cell)
             else:  # 未訪問の隣が無ければ、スタックから降ろす
                 stack.pop()
-
-        self.fix_large_open_areas()
+        close_cell_nb = len(close_cell_list)
+        self.fix_large_open_areas(close_cell_nb)
         if self.perfect is False:
-            for _ in range(2):  # 2回も繰り返せば、大抵の行き止まりは十分減るので2にした
-                self.braid(close_cell_list)  # 行き止まり解消→壁を壊すので3x3ができるかも
-                self.fix_large_open_areas()  # 出来てしまった3x3を潰す
+            max_attempts = 30  # 無限ループ防止用に設定した上限
+            for _ in range(max_attempts):
+                self.braid(close_cell_list)
+                self.fix_large_open_areas(close_cell_nb)
+                if len(self.get_dead_ends()) <= 2:
+                    break
+            else:  # 上限まで回しても行き止まりが減りきらなかった場合
+                print(
+                    "Could not reduce dead-ends enough "
+                    "within the size/shape constraints.",
+                    file=sys.stderr
+                )
 
+            # 保険: 行き止まりを潰した副作用でループは2以上になるはずだが、
+            # 小さい迷路など稀なケースのため最後に一度だけ確認する
+            if self.count_independent_loops(close_cell_list) < 2:
+                print(
+                    "Could not guarantee 2 independent loops "
+                    "within the size/shape constraints.",
+                    file=sys.stderr
+                )
+        else:
             # normal_cells = 全セルから42パターンを除いたセル数
             normal_cells = (self.width * self.height) - len(close_cell_list)
             open_edge_count = 0  # 開いている通路（エッジ）の数。これから下のループで数える
@@ -564,7 +628,7 @@ class MazeGenerator:
                         open_edge_count += 1
 
             # 通路の数がセル数-1と一致 = ループが1つもない = 完全迷路のまま
-            if open_edge_count == (normal_cells - 1):
+            if open_edge_count == (normal_cells - 1) and self.perfect is False:
                 print("Can not make non-perfect maze.", file=sys.stderr)
 
     def solve(self) -> str:
