@@ -543,15 +543,22 @@ class MazeGenerator:
                an error if entry or exit overlaps the pattern).
             2. Carve the maze from entry via DFS (depth-first search),
                breaking walls into unvisited neighbors and backtracking
-               at dead ends.
+               at dead ends. If perfect is True, this DFS carving alone
+               already produces the required single-path maze, so no
+               further steps are needed beyond removing any fully-open
+               3x3 areas (step 3).
             3. Remove any fully-open 3x3 areas via fix_large_open_areas.
-               If perfect is False, repeatedly braid and re-run
-               fix_large_open_areas (up to a fixed number of attempts)
-               until at most two dead ends remain, then verify that at
-               least two independent loops exist. Warnings are printed
-               to stderr if dead ends cannot be reduced enough or if two
-               loops cannot be guaranteed, and generation still
-               continues.
+               This runs regardless of perfect. If perfect is False,
+               additionally repeat braid and fix_large_open_areas (up
+               to a fixed number of attempts) until at most two dead
+               ends remain, then verify that at least two independent
+               loops exist. Warnings are printed to stderr if dead ends
+               cannot be reduced enough or if two loops cannot be
+               guaranteed, and generation still continues.
+
+        Raises:
+            ValueError: If the entry or exit coordinates overlap the
+                "42" pattern.
         """
         self.grid = self.build_grid()  # gridを新規作成
         self.pattern_cells = self.calc_42pattern()  # 42pattern座標を計算
@@ -619,24 +626,6 @@ class MazeGenerator:
                     "within the size/shape constraints.",
                     file=sys.stderr
                 )
-        else:
-            # normal_cells = 全セルから42パターンを除いたセル数
-            normal_cells = (self.width * self.height) - len(self.pattern_cells)
-            open_edge_count = 0  # 開いている通路（エッジ）の数。これから下のループで数える
-            for h in range(self.height):
-                for w in range(self.width):  # この二重ループで全Cellを順に見ている
-                    cell = self.grid[h][w]  # cell = 今見ているCell
-
-                    # 東南に加えて西北もカウントすれば、隣のセルの東南と二重カウントになるのでしない
-                    # もちろん東北を西南にしても問題ない
-                    if cell.walls["east"] is False:  # 東に通路があるなら
-                        open_edge_count += 1  # カウントを増やす
-                    if cell.walls["south"] is False:  # 同じく南もチェック
-                        open_edge_count += 1
-
-            # 通路の数がセル数-1と一致 = ループが1つもない = 完全迷路のまま
-            if open_edge_count == (normal_cells - 1):
-                print("Can not make non-perfect maze.", file=sys.stderr)
 
     def solve(self) -> str:
         """Find the shortest path from entry to exit via BFS and
