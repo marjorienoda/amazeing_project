@@ -46,12 +46,14 @@ main() <a_maze_ing.py>
 │   ├── calc_42pattern()
 │   ├── close_cells(pattern_cells)
 │   ├── (DFSループ: get_unvisited_neighbors)
-│   ├── fix_large_open_areas()
-│   │   ├── is_block_fully_connected(x, y)
+│   ├── fix_large_open_areas()                    # perfect問わず共通実行
+│   │   ├── is_block_fully_open(x, y)
 │   │   ├── find_extra_connections(row, col)
 │   │   └── remove_extra_connections(row, col, candidates)
-│   └── braid(pattern_cells) x2                   # perfect=Falseの場合のみ
-│       └── fix_large_open_areas()                # 再実行
+│   └── perfect=Falseの場合のみ:
+│       ├── (最大5回) braid(pattern_cells) → fix_large_open_areas()
+│       │   # 行き止まりが2以下になったら打ち切り
+│       └── count_independent_loops(pattern_cells)  # ループ数の最終確認
 │
 ├── build_display_grid(maze)                      # 表示グリッドを作成
 │   ├── make_grid(maze)
@@ -135,7 +137,7 @@ main() <a_maze_ing.py>
 - [パッケージ化の方法](https://packaging.python.org/ja/latest/tutorials/packaging-projects/)
 - [pyproject.tomlについて](https://packaging.python.org/ja/latest/guides/writing-pyproject-toml/)
 - [pyproject.tomlについて その2](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license)
-- [リポジトリのライセンス](https://docs.github.com/ja/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository)
+- [MITライセンス](https://license.md/licenses/mit-license/)
 
 ### How AI was used
 使用モデル: [Claude](claude.ai)
@@ -211,9 +213,13 @@ main() <a_maze_ing.py>
 entryセルを起点に、未訪問の隣接セルをランダムに選んで壁を壊しながら進み、行き止まりになったら1つ前のセルへ戻る（バックトラック）処理を繰り返します。
 
 **3：後処理**
-- `fix_large_open_areas()`で、3x3の開けすぎた領域（壁が無さすぎる箇所）を検出し、迷路全体の連結性を壊さない範囲で壁を追加して修正します。
-- `perfect=False`（Pac-Man用モード）の場合は、さらに`braid()`で行き止まりをランダムに1つ開放する処理と`fix_large_open_areas()`を2回繰り返し、行き止まりを減らします（完全に0にする保証はありません）。
-
+- `fix_large_open_areas()`で、3x3の完全に開けすぎた領域（内壁12枚が
+ 全部開いている箇所）を検出し、迷路全体の連結性を壊さない範囲で
+ 壁を追加して修正します。この処理はperfectの値に関わらず実行されます。
+- `perfect=False`（Pac-Man用モード）の場合は、さらに`braid()`（行き止まりの
+ 壁をランダムに1つ開放する処理）と`fix_large_open_areas()`を、行き止まりが
+ 2個以下になるまで（最大5回まで）繰り返します。その後、独立したループが
+ 2個以上あることを最終確認し、満たせない場合は警告を出します。
 ## Reusable module
 
 迷路生成ロジックは `mazegen` パッケージ内の `generator.py` モジュール内の
