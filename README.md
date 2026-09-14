@@ -51,13 +51,14 @@ main() [a_maze_ing.py]
 │   ├── calc_42pattern()
 │   ├── close_cells(pattern_cells)
 │   ├── (DFS loop: get_unvisited_neighbors)
-│   ├── fix_large_open_areas()
-│   │   ├── is_block_fully_connected(x, y)
+│   ├── fix_large_open_areas()                    # runs regardless of perfect
+│   │   ├── is_block_fully_open(x, y)
 │   │   ├── find_extra_connections(row, col)
 │   │   └── remove_extra_connections(row, col, candidates)
-│   └── braid(pattern_cells) x2                   # only if perfect=False
-│       └── fix_large_open_areas()                # run again
-│
+│   └── only if perfect=False:
+│       ├── (up to 5 times) braid(pattern_cells) → fix_large_open_areas()
+│       │   # stops once dead ends are 2 or fewer
+│       └── count_independent_loops(pattern_cells)  # final check on loop count
 ├── build_display_grid(maze)                      # builds the display grid
 │   ├── make_grid(maze)
 │   ├── add_start_goal(maze, grid)
@@ -70,16 +71,16 @@ main() [a_maze_ing.py]
 │   └── convert_hex(num)
 │
 └── while True:                                    # menu loop
-    ├── <1> regenerate: generate → build_display_grid → make_output
-    │
-    ├── <2> toggle show_path
-    │   └── show_solve(maze.solve(), maze, grid)       # only if show_path
-    │
-    ├── <3> rotate color: red→green→yellow→blue→white(default)
-    │   └──change_wall_color(grid, color)             # only if color is set
-    │
-    ├── render(display_grid)
-    └── <4> exit loop
+   ├── <1> regenerate: generate → build_display_grid → make_output
+   │
+   ├── <2> toggle show_path
+   │   └── show_solve(maze.solve(), maze, grid)       # only if show_path
+   │
+   ├── <3> rotate color: red→green→yellow→blue→white(default)
+   │   └──change_wall_color(grid, color)             # only if color is set
+   │
+   ├── render(display_grid)
+   └── <4> exit loop
 ```
 
 
@@ -229,13 +230,16 @@ neighboring cell, breaks the wall to it, and moves in; when it reaches
 a dead end, it backtracks to the previous cell.
 
 **3: Post-processing**
-- `fix_large_open_areas()` detects over-open 3x3 areas (regions with
-  too few walls) and fixes them by adding walls, without breaking the
-  maze's overall connectivity.
-- If `perfect=False` (Pac-Man mode), it additionally alternates
-  `braid()` — which randomly opens one wall per dead end — with
-  `fix_large_open_areas()` twice, to reduce dead ends (not guaranteed
-  to eliminate them entirely).
+- `fix_large_open_areas()` detects fully-open 3x3 areas (blocks where
+ all 12 internal walls are open) and fixes them by adding walls,
+ without breaking the maze's overall connectivity. This runs
+ regardless of the value of `perfect`.
+- If `perfect=False` (Pac-Man mode), it additionally repeats `braid()`
+ (which opens one wall per dead end) together with
+ `fix_large_open_areas()` until at most two dead ends remain (up to
+ 5 attempts). It then does a final check that at least two
+ independent loops exist, printing a warning if this cannot be
+ guaranteed.
 
 
 ## Reusable module
