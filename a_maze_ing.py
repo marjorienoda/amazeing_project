@@ -119,12 +119,9 @@ def main() -> None:
             print("=== System closed ===")
             break
         else:
-            print("No mode")
+            print("No mode", file=sys.stderr)
         if color:
             display_grid = change_wall_color(base_grid, color)
-            if display_grid is None:
-                print("Color change was Failure")
-                display_grid = base_grid
         else:
             display_grid = base_grid
 
