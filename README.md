@@ -92,6 +92,17 @@ main() [a_maze_ing.py]
 ```
 This creates a virtual environment named `.venv` and installs the external packages this program depends on (e.g. `typing_extensions`), as listed in `requirements.txt`.
 
+- Activate the environment
+
+```bash
+    source .venv/bin/activate
+```
+
+- Desactivate when finished
+```bash
+    deactivate
+```
+
 - Run the program
 ```bash
     make run
