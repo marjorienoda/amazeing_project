@@ -88,6 +88,17 @@ main() <a_maze_ing.py>
 ```
 `.venv`という仮想環境を作成し、`requirements.txt`に記載された本プログラムが依存する外部パッケージ（`typing_extensions`など）をインストールします。
 
+- 環境を有効にする
+
+```bash
+    source .venv/bin/activate
+```
+
+- 終了時に無効にする
+```bash
+    deactivate
+```
+
 - 実行する
 ```bash
     make run
